@@ -103,6 +103,7 @@ public abstract class AbstractRestDocFilter implements Filter {
 		final Method[] methods = apiClass.getMethods();
 		for (final Method method : methods) {
 			if (method.isAnnotationPresent(org.restdoc.server.impl.annotations.RestDoc.class)) {
+				this.logger.info("Generating RestDoc of method: " + method.toString());
 				this.addResourceMethod(basepath, method);
 			}
 		}
@@ -267,8 +268,9 @@ public abstract class AbstractRestDocFilter implements Filter {
 			} else {
 				chain.doFilter(request, response);
 			}
+		} else {
+			chain.doFilter(request, response);
 		}
-		chain.doFilter(request, response);
 	}
 
 	/**
