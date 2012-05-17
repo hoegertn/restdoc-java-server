@@ -263,7 +263,7 @@ public abstract class AbstractRestDocFilter implements Filter {
 		if (request instanceof HttpServletRequest) {
 			final HttpServletRequest httpRequest = (HttpServletRequest)request;
 			if (httpRequest.getMethod().equals("OPTIONS")) {
-				final String docString = this.getRestDocStringForPath(httpRequest.getContextPath());
+				final String docString = this.getRestDocStringForPath(httpRequest.getRequestURI());
 				response.getWriter().write(docString);
 			} else {
 				chain.doFilter(request, response);
