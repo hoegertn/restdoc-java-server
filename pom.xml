@@ -35,7 +35,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.restdoc</groupId>
-			<artifactId>api-spec</artifactId>
+			<artifactId>restdoc-api</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
