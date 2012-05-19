@@ -87,4 +87,21 @@ public class MyRSBean {
 		return content;
 	}
 
+	/**
+	 * @param msg
+	 *            the message
+	 * @return the created message
+	 */
+	@Path("/")
+	@POST
+	@RestDoc(methodDescription = "Update the message content")
+	@RestDocAccept({ @RestDocType(type = "application/json", schemaClass = Msg.class) })
+	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
+	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@Produces("text/plain")
+	@Consumes("application/json")
+	public String setMessage(Msg msg) {
+		return this.setMessage(msg.getId(), msg.getContent());
+	}
+
 }

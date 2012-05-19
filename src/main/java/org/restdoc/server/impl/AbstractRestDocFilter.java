@@ -23,6 +23,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.schema.JsonSchema;
 import org.restdoc.api.HeaderDefinition;
 import org.restdoc.api.MethodDefinition;
 import org.restdoc.api.ParamDefinition;
@@ -31,6 +34,7 @@ import org.restdoc.api.Representation;
 import org.restdoc.api.ResponseDefinition;
 import org.restdoc.api.RestDoc;
 import org.restdoc.api.RestResource;
+import org.restdoc.api.Schema;
 import org.restdoc.api.util.RestDocParser;
 import org.restdoc.server.impl.annotations.RestDocAccept;
 import org.restdoc.server.impl.annotations.RestDocHeader;
@@ -38,6 +42,7 @@ import org.restdoc.server.impl.annotations.RestDocParam;
 import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
 import org.restdoc.server.impl.annotations.RestDocReturnCodes;
+import org.restdoc.server.impl.annotations.RestDocSchema;
 import org.restdoc.server.impl.annotations.RestDocType;
 import org.restdoc.server.impl.annotations.RestDocValidation;
 import org.slf4j.Logger;
@@ -62,6 +67,10 @@ public abstract class AbstractRestDocFilter implements Filter {
 
 	private HashMap<String, HeaderDefinition> responseHeaderMap;
 
+	private HashMap<String, Schema> schemaMap;
+
+	private ObjectMapper mapper;
+
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		this.init();
@@ -74,6 +83,8 @@ public abstract class AbstractRestDocFilter implements Filter {
 		this.logger.info("Starting generation of RestDoc");
 		this.logger.info("Searching for RestDoc API classes");
 
+		this.mapper = RestDocParser.createMapper();
+
 		this.requestHeaderMap = this.getGlobalRequestHeaders();
 		this.responseHeaderMap = this.getGlobalResponseHeaders();
 
@@ -83,6 +94,9 @@ public abstract class AbstractRestDocFilter implements Filter {
 		}
 		if (this.responseHeaderMap == null) {
 			this.responseHeaderMap = Maps.newHashMap();
+		}
+		if (this.schemaMap == null) {
+			this.schemaMap = Maps.newHashMap();
 		}
 
 		for (final Class<?> apiClass : this.getRESTClasses()) {
@@ -202,12 +216,37 @@ public abstract class AbstractRestDocFilter implements Filter {
 			for (final RestDocType restDocType : types) {
 				final Representation rep = new Representation();
 				rep.setType(restDocType.type());
-				rep.setSchema(restDocType.schema());
+				if (!restDocType.schemaClass().equals(Object.class)) {
+					final String schema = this.getSchemaFromClass(restDocType.schemaClass());
+					rep.setSchema(schema);
+				} else {
+					rep.setSchema(restDocType.schema());
+				}
 				def.getTypes().add(rep);
 			}
 			// TODO headers
 		}
 		return def;
+	}
+
+	private String getSchemaFromClass(Class<?> schemaClass) {
+		if (schemaClass.isAnnotationPresent(RestDocSchema.class)) {
+			final RestDocSchema docSchema = schemaClass.getAnnotation(RestDocSchema.class);
+			final String schemaURI = docSchema.value();
+			if (!this.schemaMap.containsKey(schemaURI)) {
+				try {
+					final JsonSchema schema = this.mapper.generateJsonSchema(schemaClass);
+					final Schema s = new Schema();
+					s.setSchema(schema);
+					this.schemaMap.put(schemaURI, s);
+				} catch (final JsonMappingException e) {
+					this.logger.error("Error creating schema for URI: " + schemaURI, e);
+				}
+			}
+			return schemaURI;
+		}
+		this.logger.error("Schemaclass {} is not annotated with RestDocSchema.", schemaClass.getCanonicalName());
+		return "";
 	}
 
 	private Map<String, String> getStatusCodes(Method method) {
@@ -229,7 +268,12 @@ public abstract class AbstractRestDocFilter implements Filter {
 			for (final RestDocType restDocType : types) {
 				final Representation rep = new Representation();
 				rep.setType(restDocType.type());
-				rep.setSchema(restDocType.schema());
+				if (!restDocType.schemaClass().equals(Object.class)) {
+					final String schema = this.getSchemaFromClass(restDocType.schemaClass());
+					rep.setSchema(schema);
+				} else {
+					rep.setSchema(restDocType.schema());
+				}
 				list.add(rep);
 			}
 		}
@@ -290,6 +334,9 @@ public abstract class AbstractRestDocFilter implements Filter {
 
 	private RestDoc getDoc(String path) {
 		final RestDoc doc = new RestDoc();
+		// popluate schemas
+		doc.setSchemas(this.schemaMap);
+
 		// populate header section
 		doc.getHeaders().getRequestHeader().putAll(this.requestHeaderMap);
 		doc.getHeaders().getResponseHeader().putAll(this.responseHeaderMap);

@@ -23,4 +23,9 @@ public @interface RestDocType {
 	 */
 	String schema() default "";
 
+	/**
+	 * @return the schema Class
+	 */
+	Class<?> schemaClass() default Object.class;
+
 }

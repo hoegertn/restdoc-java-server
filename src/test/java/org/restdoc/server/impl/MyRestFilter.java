@@ -40,7 +40,7 @@ public class MyRestFilter extends AbstractRestDocFilter {
 		filter.init();
 
 		final String doc = filter.getRestDocStringForPath("");
-
 		System.out.println(doc);
+
 	}
 }
