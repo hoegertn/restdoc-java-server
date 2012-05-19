@@ -5,6 +5,13 @@
 	<artifactId>restdoc-server-impl</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Java Server implementation</name>
+	<description>Server implementation of RestDoc API Spec</description>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
 	<url>http://www.restdoc.org</url>
 	<inceptionYear>2012</inceptionYear>
 	<organization>
