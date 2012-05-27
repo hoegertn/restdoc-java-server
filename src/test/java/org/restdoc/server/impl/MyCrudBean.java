@@ -86,9 +86,7 @@ public class MyCrudBean implements IProvideRestDoc {
 
 	@Override
 	public RestResource[] getRestDocResources() {
-		final RestResource rootRes = new RestResource();
-		rootRes.id("getItemlist").description("list of items").path("/api/strings");
-
+		final RestResource rootRes = new RestResource().id("getItemlist").description("list of items").path("/api/strings");
 		rootRes.method("GET", new MethodDefinition().description("get list of items").statusCode("200", "OK"));
 
 		final MethodDefinition createItem = new MethodDefinition().description("create new item").statusCode("201", "Created");
