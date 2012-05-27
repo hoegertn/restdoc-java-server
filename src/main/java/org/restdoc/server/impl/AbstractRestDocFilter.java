@@ -3,6 +3,7 @@ package org.restdoc.server.impl;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +101,24 @@ public abstract class AbstractRestDocFilter implements Filter {
 		}
 
 		for (final Class<?> apiClass : this.getRESTClasses()) {
-			this.addResourcesOfClass(apiClass);
+			// check if class provides predefined RestDoc
+			boolean scanNeeded = true;
+			if (Arrays.asList(apiClass.getInterfaces()).contains(IProvideRestDoc.class)) {
+				try {
+					final IProvideRestDoc apiObject = (IProvideRestDoc)apiClass.newInstance();
+					final RestResource[] restDocResources = apiObject.getRestDocResources();
+					for (final RestResource restResource : restDocResources) {
+						this.resources.put(restResource.getPath(), restResource);
+					}
+					this.schemaMap.putAll(apiObject.getRestDocSchemas());
+					scanNeeded = false;
+				} catch (final Exception e) {
+					// ignore it and fall back to annotation scan
+				}
+			}
+			if (scanNeeded) {
+				this.addResourcesOfClass(apiClass);
+			}
 		}
 	}
 

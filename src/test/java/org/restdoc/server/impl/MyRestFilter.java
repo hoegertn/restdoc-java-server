@@ -14,7 +14,7 @@ public class MyRestFilter extends AbstractRestDocFilter {
 
 	@Override
 	protected Class<?>[] getRESTClasses() {
-		return new Class[] { MyRSBean.class };
+		return new Class[] { MyRSBean.class, MyCrudBean.class };
 	}
 
 	@Override
