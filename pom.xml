@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.restdoc</groupId>
 	<artifactId>restdoc-server-impl</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>Java Server implementation</name>
 	<description>Server implementation of RestDoc API Spec</description>
 	<parent>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.restdoc</groupId>
 			<artifactId>restdoc-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.4</version>
+			<version>1.6.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -75,7 +75,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.6.4</version>
+			<version>1.6.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
