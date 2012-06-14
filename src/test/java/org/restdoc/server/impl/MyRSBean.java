@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.restdoc.server.impl.annotations.RestDoc;
 import org.restdoc.server.impl.annotations.RestDocAccept;
+import org.restdoc.server.impl.annotations.RestDocHeader;
 import org.restdoc.server.impl.annotations.RestDocParam;
 import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
@@ -37,7 +38,7 @@ public class MyRSBean {
 	 */
 	@GET
 	@RestDoc(id = "messageList", resourceDescription = "A list of messages", methodDescription = "List all messages")
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
+	@RestDocResponse(types = { @RestDocType(type = "text/plain") }, headers = { @RestDocHeader(name = "X-Call", description = "Remaining calls", required = false) })
 	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed") })
 	@Produces("text/plain")
 	@Consumes("text/plain")
@@ -92,7 +93,6 @@ public class MyRSBean {
 	 *            the message
 	 * @return the created message
 	 */
-	@Path("/")
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
 	@RestDocAccept({ @RestDocType(type = "application/json", schemaClass = Msg.class) })

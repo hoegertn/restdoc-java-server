@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.ws.rs.HeaderParam;
+
 /**
  * @author thoeger
  * 
@@ -22,5 +24,10 @@ public @interface RestDocHeader {
 	 * @return if this header is mandatory
 	 */
 	boolean required() default false;
+
+	/**
+	 * @return the name of this header if not already defined by {@link HeaderParam}
+	 */
+	String name() default "";
 
 }

@@ -18,4 +18,9 @@ public @interface RestDocResponse {
 	 */
 	RestDocType[] types();
 
+	/**
+	 * @return the array of response headers
+	 */
+	RestDocHeader[] headers() default {};
+
 }
