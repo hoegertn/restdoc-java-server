@@ -24,7 +24,7 @@ public class Msg {
 	 * @param id
 	 *            the id to set
 	 */
-	public void setId(String id) {
+	public void setId(final String id) {
 		this.id = id;
 	}
 
@@ -39,7 +39,7 @@ public class Msg {
 	 * @param content
 	 *            the content to set
 	 */
-	public void setContent(String content) {
+	public void setContent(final String content) {
 		this.content = content;
 	}
 
