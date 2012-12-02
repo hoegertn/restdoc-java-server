@@ -1,5 +1,26 @@
 package org.restdoc.server.impl;
 
+/*
+ * #%L
+ * Java Server implementation
+ * %%
+ * Copyright (C) 2012 RestDoc org
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,7 +43,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * @author thoeger
  * 
  */
 @Path("/api/strings")
@@ -47,7 +67,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	@GET
 	@Produces("text/plain")
 	@Consumes("text/plain")
-	public String getSingleItem(@PathParam("id") String id) {
+	public String getSingleItem(@PathParam("id") final String id) {
 		throw new WebApplicationException(Status.NOT_FOUND);
 	}
 
@@ -60,7 +80,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	@POST
 	@Produces("text/plain")
 	@Consumes("text/plain")
-	public String updateItem(@PathParam("id") String id, String content) {
+	public String updateItem(@PathParam("id") final String id, final String content) {
 		return content;
 	}
 
@@ -72,7 +92,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	@POST
 	@Produces("text/plain")
 	@Consumes("text/plain")
-	public String createItem(String msg) {
+	public String createItem(final String msg) {
 		return msg;
 	}
 
@@ -80,7 +100,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	 * @param id
 	 */
 	@DELETE
-	public void deleteItem(@PathParam("id") String id) {
+	public void deleteItem(@PathParam("id") final String id) {
 		// delete object
 	}
 
