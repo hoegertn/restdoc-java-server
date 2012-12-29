@@ -20,13 +20,10 @@ package org.restdoc.server.impl.annotations;
  * #L%
  */
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import javax.ws.rs.HeaderParam;
 
 /**
  * 
@@ -46,7 +43,7 @@ public @interface RestDocHeader {
 	boolean required() default false;
 
 	/**
-	 * @return the name of this header if not already defined by {@link HeaderParam}
+	 * @return the name of this header if not already defined by javax.ws.rs.HeaderParam
 	 */
 	String name() default "";
 

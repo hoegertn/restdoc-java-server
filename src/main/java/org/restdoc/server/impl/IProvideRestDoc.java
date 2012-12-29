@@ -20,7 +20,6 @@ package org.restdoc.server.impl;
  * #L%
  */
 
-
 import java.util.HashMap;
 
 import org.restdoc.api.RestResource;

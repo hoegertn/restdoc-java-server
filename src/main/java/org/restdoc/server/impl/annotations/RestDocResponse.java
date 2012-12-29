@@ -20,7 +20,6 @@ package org.restdoc.server.impl.annotations;
  * #L%
  */
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,6 +40,6 @@ public @interface RestDocResponse {
 	/**
 	 * @return the array of response headers
 	 */
-	RestDocHeader[] headers() default {};
+	RestDocHeader[] headers() default { };
 
 }

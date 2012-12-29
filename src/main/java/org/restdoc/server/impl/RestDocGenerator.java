@@ -20,7 +20,6 @@ package org.restdoc.server.impl;
  * #L%
  */
 
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -38,6 +37,9 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -64,9 +66,6 @@ import org.restdoc.server.impl.annotations.RestDocType;
 import org.restdoc.server.impl.annotations.RestDocValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Use this class to generate RestDoc
