@@ -20,7 +20,6 @@ package org.restdoc.server.impl;
  * #L%
  */
 
-
 import java.io.IOException;
 import java.net.URLDecoder;
 
@@ -63,6 +62,10 @@ public class MyRestFilter implements Filter {
 	@Override
 	public void init(final FilterConfig filterConfig) throws ServletException {
 		this.generator = new RestDocGenerator();
+
+		// Enable to test RestDoc extensibility
+		this.generator.registerGeneratorExtension(new MyExt());
+
 		final Class<?>[] classes = new Class[] { MyRSBean.class, MyCrudBean.class };
 		final GlobalHeader globalHeader = new GlobalHeader();
 		globalHeader.request("X-Auth", "The Auth Key. See http://www.foo.bar/auth", false);

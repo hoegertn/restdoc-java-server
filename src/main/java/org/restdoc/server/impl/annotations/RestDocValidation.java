@@ -35,7 +35,7 @@ public @interface RestDocValidation {
 	/**
 	 * @return the validation type
 	 */
-	String type();
+	String type() default "match";
 
 	/**
 	 * @return the validation pattern

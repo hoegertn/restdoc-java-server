@@ -23,9 +23,11 @@ package org.restdoc.server.impl;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -86,6 +88,10 @@ public class RestDocGenerator {
 
 	private final Map<String, Schema> schemaMap = Maps.newConcurrentMap();
 
+	private final Map<String, Object> globalAdditional = Maps.newConcurrentMap();
+
+	private final RDGEWrapper ext = new RDGEWrapper();
+
 	/**
 	 * initialize the RestDoc Generator
 	 * 
@@ -109,6 +115,9 @@ public class RestDocGenerator {
 			}
 			if (globalHeader.getResponseHeader() != null) {
 				this.responseHeaderMap.putAll(globalHeader.getResponseHeader());
+			}
+			if (globalHeader.getAdditionalFields() != null && !globalHeader.getAdditionalFields().isEmpty()) {
+				this.globalAdditional.putAll(globalHeader.getAdditionalFields());
 			}
 		}
 
@@ -169,33 +178,42 @@ public class RestDocGenerator {
 		final HashMap<String, HeaderDefinition> methodRequestHeader = Maps.newHashMap();
 		final HashMap<String, ParamDefinition> methodParams = Maps.newHashMap();
 		for (int i = 0; i < parameterTypes.length; i++) {
-			// final Class<?> paramType = parameterTypes[i];
+			final Class<?> paramType = parameterTypes[i];
 			final Annotation[] paramAnnotations = parameterAnnotations[i];
-			final ParamDefinition definition = new ParamDefinition();
 			final HeaderDefinition headerDefinition = new HeaderDefinition();
 
-			for (final Annotation annotation : paramAnnotations) {
-				if (annotation instanceof QueryParam) {
-					final QueryParam queryParam = (QueryParam) annotation;
-					final String name = queryParam.value();
-					queryParams.add(name);
-					methodParams.put(name, definition);
-				} else if (annotation instanceof PathParam) {
-					final PathParam pathParam = (PathParam) annotation;
-					final String name = pathParam.value();
-					methodParams.put(name, definition);
-				} else if (annotation instanceof HeaderParam) {
-					final HeaderParam headerParam = (HeaderParam) annotation;
-					final String name = headerParam.value();
-					if (!this.requestHeaderMap.containsKey(name)) {
-						methodRequestHeader.put(name, headerDefinition);
+			final AnnotationMap map = new AnnotationMap(paramAnnotations);
+
+			if (map.hasAnnotation(QueryParam.class)) {
+				final String name = map.getAnnotation(QueryParam.class).value();
+				queryParams.add(name);
+				final ParamDefinition definition = new ParamDefinition();
+				if (map.hasAnnotation(RestDocParam.class)) {
+					this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
+				}
+				this.ext.queryParam(name, definition, paramType, map);
+				methodParams.put(name, definition);
+			}
+			if (map.hasAnnotation(PathParam.class)) {
+				final String name = map.getAnnotation(PathParam.class).value();
+				final ParamDefinition definition = new ParamDefinition();
+				if (map.hasAnnotation(RestDocParam.class)) {
+					this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
+				}
+				this.ext.pathParam(name, definition, paramType, map);
+				methodParams.put(name, definition);
+			}
+			if (map.hasAnnotation(HeaderParam.class)) {
+				final String name = map.getAnnotation(HeaderParam.class).value();
+				final HeaderDefinition definition = new HeaderDefinition();
+				if (!this.requestHeaderMap.containsKey(name)) {
+					if (map.hasAnnotation(RestDocHeader.class)) {
+						final RestDocHeader docHeader = map.getAnnotation(RestDocHeader.class);
+						headerDefinition.setDescription(docHeader.description());
+						headerDefinition.setRequired(docHeader.required());
 					}
-				} else if (annotation instanceof RestDocParam) {
-					this.parseRestDocParameter(definition, (RestDocParam) annotation);
-				} else if (annotation instanceof RestDocHeader) {
-					final RestDocHeader docHeader = (RestDocHeader) annotation;
-					headerDefinition.setDescription(docHeader.description());
-					headerDefinition.setRequired(docHeader.required());
+					this.ext.headerParam(name, definition, paramType, map);
+					methodRequestHeader.put(name, headerDefinition);
 				}
 			}
 		}
@@ -224,6 +242,7 @@ public class RestDocGenerator {
 			restResource.setId(id);
 			restResource.setDescription(resourceDescription);
 			restResource.getParams().putAll(methodParams);
+			this.ext.newResource(restResource);
 		}
 
 		if (restResource.getMethods().containsKey(methodType)) {
@@ -238,6 +257,8 @@ public class RestDocGenerator {
 		def.setResponse(this.getMethodResponse(method));
 
 		restResource.getMethods().put(methodType, def);
+
+		this.ext.newMethod(restResource, def, method);
 	}
 
 	private ResponseDefinition getMethodResponse(final Method method) {
@@ -271,6 +292,7 @@ public class RestDocGenerator {
 					final JsonSchema schema = this.mapper.generateJsonSchema(schemaClass);
 					final Schema s = new Schema();
 					s.setSchema(schema);
+					this.ext.newSchema(schemaURI, s, schemaClass);
 					this.schemaMap.put(schemaURI, s);
 				} catch (final JsonMappingException e) {
 					throw new RestDocException("Error creating schema for URI: " + schemaURI, e);
@@ -310,7 +332,7 @@ public class RestDocGenerator {
 		return list;
 	}
 
-	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam) {
+	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam, final Class<?> paramType) {
 		definition.setDescription(docParam.description());
 		final RestDocValidation[] restDocValidations = docParam.validations();
 		for (final RestDocValidation validation : restDocValidations) {
@@ -318,6 +340,18 @@ public class RestDocGenerator {
 			v.setType(validation.type());
 			v.setPattern(validation.pattern());
 			definition.getValidations().add(v);
+		}
+		System.out.println("ParamType: " + paramType);
+		if (paramType.equals(Long.class)) {
+			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]+"));
+		} else if (paramType.equals(Integer.class)) {
+			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]+"));
+		} else if (paramType.equals(Double.class)) {
+			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]*\\.?[0-9]+"));
+		} else if (paramType.equals(BigDecimal.class)) {
+			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]*\\.?[0-9]+"));
+		} else if (paramType.equals(Boolean.class)) {
+			definition.getValidations().add(new ParamValidation("match", "true|false"));
 		}
 	}
 
@@ -331,6 +365,10 @@ public class RestDocGenerator {
 		}
 		throw new RuntimeException("No suitable method found for method: " + method.toString());
 	}
+
+	// ######################################################
+	// Retrieving RestDoc for given path
+	// ######################################################
 
 	/**
 	 * @param path
@@ -359,6 +397,7 @@ public class RestDocGenerator {
 		// populate header section
 		doc.getHeaders().getRequestHeader().putAll(this.requestHeaderMap);
 		doc.getHeaders().getResponseHeader().putAll(this.responseHeaderMap);
+		doc.getHeaders().getAdditionalFields().putAll(this.globalAdditional);
 
 		// populate resource section
 		final Set<Entry<String, RestResource>> entrySet = this.resources.entrySet();
@@ -368,7 +407,76 @@ public class RestDocGenerator {
 			}
 		}
 
+		this.ext.renderDoc(path, doc);
+
 		return doc;
+	}
+
+	// ##############################################
+	// Extension registry and wrapper
+	// ##############################################
+
+	/**
+	 * @param extension
+	 *            the {@link IRestDocGeneratorExtension} to register
+	 */
+	public void registerGeneratorExtension(final IRestDocGeneratorExtension extension) {
+		this.ext.exts.add(extension);
+	}
+
+	private class RDGEWrapper implements IRestDocGeneratorExtension {
+
+		private final LinkedList<IRestDocGeneratorExtension> exts = new LinkedList<IRestDocGeneratorExtension>();
+
+		@Override
+		public void newResource(final RestResource restResource) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.newResource(restResource);
+			}
+		}
+
+		@Override
+		public void queryParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.queryParam(name, definition, paramType, map);
+			}
+		}
+
+		@Override
+		public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.pathParam(name, definition, paramType, map);
+			}
+		}
+
+		@Override
+		public void headerParam(final String name, final HeaderDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.headerParam(name, definition, paramType, map);
+			}
+		}
+
+		@Override
+		public void newMethod(final RestResource restResource, final MethodDefinition def, final Method method) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.newMethod(restResource, def, method);
+			}
+		}
+
+		@Override
+		public void newSchema(final String schemaURI, final Schema s, final Class<?> schemaClass) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.newSchema(schemaURI, s, schemaClass);
+			}
+		}
+
+		@Override
+		public void renderDoc(final String path, final RestDoc doc) {
+			for (final IRestDocGeneratorExtension e : this.exts) {
+				e.renderDoc(path, doc);
+			}
+		}
+
 	}
 
 }

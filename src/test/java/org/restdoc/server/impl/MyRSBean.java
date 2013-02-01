@@ -20,7 +20,6 @@ package org.restdoc.server.impl;
  * #L%
  */
 
-
 import java.util.HashMap;
 import java.util.Set;
 
@@ -30,8 +29,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
+
+import com.google.common.collect.Maps;
 
 import org.restdoc.server.impl.annotations.RestDoc;
 import org.restdoc.server.impl.annotations.RestDocAccept;
@@ -41,8 +43,6 @@ import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
 import org.restdoc.server.impl.annotations.RestDocReturnCodes;
 import org.restdoc.server.impl.annotations.RestDocType;
-
-import com.google.common.collect.Maps;
 
 /**
  * 
@@ -115,6 +115,8 @@ public class MyRSBean {
 	/**
 	 * @param msg
 	 *            the message
+	 * @param lifetime
+	 *            the message ttl
 	 * @return the created message
 	 */
 	@POST
@@ -125,7 +127,7 @@ public class MyRSBean {
 			@RestDocReturnCode(code = "403", description = "Access not allowed") })
 	@Produces("text/plain")
 	@Consumes("application/json")
-	public String setMessage(final Msg msg) {
+	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
 
