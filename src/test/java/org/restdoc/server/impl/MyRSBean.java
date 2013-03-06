@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.common.collect.Maps;
 
+import org.restdoc.server.ext.oauth2.Scopes;
 import org.restdoc.server.impl.annotations.RestDoc;
 import org.restdoc.server.impl.annotations.RestDocAccept;
 import org.restdoc.server.impl.annotations.RestDocHeader;
@@ -107,6 +108,7 @@ public class MyRSBean {
 			@RestDocReturnCode(code = "403", description = "Access not allowed") })
 	@Produces("text/plain")
 	@Consumes("text/plain")
+	@Scopes("write")
 	public String setMessage(@PathParam("id") final String id, final String content) {
 		this.messages.put(id, content);
 		return content;

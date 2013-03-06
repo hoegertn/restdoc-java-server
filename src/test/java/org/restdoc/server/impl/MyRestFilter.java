@@ -32,6 +32,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.restdoc.api.GlobalHeader;
+import org.restdoc.server.ext.oauth2.OAuth2Extension;
 
 /**
  * 
@@ -63,8 +64,12 @@ public class MyRestFilter implements Filter {
 	public void init(final FilterConfig filterConfig) throws ServletException {
 		this.generator = new RestDocGenerator();
 
+		final OAuth2Extension oauth = new OAuth2Extension("tokenURL", "authURL", "code", "password");
+		oauth.setClientaccess("tweet me!");
+
 		// Enable to test RestDoc extensibility
 		this.generator.registerGeneratorExtension(new MyExt());
+		this.generator.registerGeneratorExtension(oauth);
 
 		final Class<?>[] classes = new Class[] { MyRSBean.class, MyCrudBean.class };
 		final GlobalHeader globalHeader = new GlobalHeader();
