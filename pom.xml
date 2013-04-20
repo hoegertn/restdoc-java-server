@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.restdoc</groupId>
 	<artifactId>restdoc-server-impl</artifactId>
-	<version>1.3.0</version>
+	<version>1.4.0-SNAPSHOT</version>
 	<name>Java Server implementation</name>
 	<description>Server implementation of RestDoc API Spec</description>
 	<parent>
