@@ -1,23 +1,14 @@
 package org.restdoc.server.impl;
 
 /*
- * #%L
- * Java Server implementation
- * %%
- * Copyright (C) 2012 RestDoc org
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may obtain a copy of the License at
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License. #L%
  */
 
 import java.util.HashMap;
@@ -50,18 +41,18 @@ import org.restdoc.server.impl.annotations.RestDocType;
  */
 @Path("/api")
 public class MyRSBean {
-
+	
 	private final HashMap<String, String> messages = Maps.newHashMap();
-
+	
+	
 	/**
 	 * @param id
 	 * @return the message
 	 */
 	@GET
 	@RestDoc(id = "messageList", resourceDescription = "A list of messages", methodDescription = "List all messages")
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") }, headers = { @RestDocHeader(name = "X-Call", description = "Remaining calls", required = false) })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"),
-			@RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")}, headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	public String getMessageList() {
@@ -73,7 +64,7 @@ public class MyRSBean {
 		}
 		return sb.toString();
 	}
-
+	
 	/**
 	 * @param id
 	 * @return the message
@@ -81,10 +72,8 @@ public class MyRSBean {
 	@Path("/{id}")
 	@GET
 	@RestDoc(id = "message", resourceDescription = "A single message", methodDescription = "Read the message content")
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"),
-			@RestDocReturnCode(code = "403", description = "Access not allowed"),
-			@RestDocReturnCode(code = "404", description = "Message not found") })
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	public String getMessage(@PathParam("id") @RestDocParam(description = "The message id") final String id) {
@@ -93,7 +82,7 @@ public class MyRSBean {
 		}
 		throw new WebApplicationException(Status.NOT_FOUND);
 	}
-
+	
 	/**
 	 * @param id
 	 * @param content
@@ -102,10 +91,9 @@ public class MyRSBean {
 	@Path("/{id}")
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({ @RestDocType(type = "text/plain") })
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"),
-			@RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocAccept({@RestDocType(type = "text/plain")})
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	@Scopes("write")
@@ -113,24 +101,21 @@ public class MyRSBean {
 		this.messages.put(id, content);
 		return content;
 	}
-
+	
 	/**
-	 * @param msg
-	 *            the message
-	 * @param lifetime
-	 *            the message ttl
+	 * @param msg the message
+	 * @param lifetime the message ttl
 	 * @return the created message
 	 */
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({ @RestDocType(type = "application/json", schemaClass = Msg.class) })
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"),
-			@RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocAccept({@RestDocType(type = "application/json", schemaClass = Msg.class)})
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("application/json")
 	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
-
+	
 }

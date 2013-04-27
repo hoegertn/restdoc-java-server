@@ -1,23 +1,14 @@
 package org.restdoc.server.impl;
 
 /*
- * #%L
- * Java Server implementation
- * %%
- * Copyright (C) 2012 RestDoc org
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may obtain a copy of the License at
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License. #L%
  */
 
 import java.io.IOException;
@@ -73,34 +64,32 @@ import org.slf4j.LoggerFactory;
  * Use this class to generate RestDoc
  */
 public class RestDocGenerator {
-
+	
 	private final AtomicBoolean initialized = new AtomicBoolean(false);
-
+	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+	
 	private final HashMap<String, RestResource> resources = Maps.newHashMap();
-
+	
 	private final ObjectMapper mapper = RestDocParser.createMapper();
-
+	
 	private final Map<String, HeaderDefinition> requestHeaderMap = Maps.newConcurrentMap();
-
+	
 	private final Map<String, HeaderDefinition> responseHeaderMap = Maps.newConcurrentMap();
-
+	
 	private final Map<String, Schema> schemaMap = Maps.newConcurrentMap();
-
+	
 	private final Map<String, Object> globalAdditional = Maps.newConcurrentMap();
-
+	
 	private final RDGEWrapper ext = new RDGEWrapper();
-
+	
+	
 	/**
 	 * initialize the RestDoc Generator
 	 * 
-	 * @param classes
-	 *            the array of JAX-RS classes
-	 * @param globalHeader
-	 *            the global headers
-	 * @param baseURI
-	 *            an optional base uri like "/api"
+	 * @param classes the array of JAX-RS classes
+	 * @param globalHeader the global headers
+	 * @param baseURI an optional base uri like "/api"
 	 */
 	public void init(final Class<?>[] classes, final GlobalHeader globalHeader, final String baseURI) {
 		if (!this.initialized.compareAndSet(false, true)) {
@@ -108,7 +97,7 @@ public class RestDocGenerator {
 		}
 		this.logger.info("Starting generation of RestDoc");
 		this.logger.info("Searching for RestDoc API classes");
-
+		
 		if (globalHeader != null) {
 			if (globalHeader.getRequestHeader() != null) {
 				this.requestHeaderMap.putAll(globalHeader.getRequestHeader());
@@ -120,7 +109,7 @@ public class RestDocGenerator {
 				this.globalAdditional.putAll(globalHeader.getAdditionalFields());
 			}
 		}
-
+		
 		for (final Class<?> apiClass : classes) {
 			// check if class provides predefined RestDoc
 			boolean scanNeeded = true;
@@ -143,16 +132,16 @@ public class RestDocGenerator {
 			}
 		}
 	}
-
+	
 	private void addResourcesOfClass(final Class<?> apiClass, final String baseURI) {
 		this.logger.info("Scanning class: {}", apiClass.getCanonicalName());
-
+		
 		String basepath = baseURI != null ? baseURI : "";
 		if (apiClass.isAnnotationPresent(Path.class)) {
 			final Path path = apiClass.getAnnotation(Path.class);
 			basepath += path.value();
 		}
-
+		
 		// find methods
 		final Method[] methods = apiClass.getMethods();
 		for (final Method method : methods) {
@@ -162,17 +151,16 @@ public class RestDocGenerator {
 			}
 		}
 	}
-
+	
 	private void addResourceMethod(final String basepath, final Method method) {
 		// get needed annotations from method
-		final org.restdoc.server.impl.annotations.RestDoc docAnnotation = method
-				.getAnnotation(org.restdoc.server.impl.annotations.RestDoc.class);
+		final org.restdoc.server.impl.annotations.RestDoc docAnnotation = method.getAnnotation(org.restdoc.server.impl.annotations.RestDoc.class);
 		final Path pathAnnotation = method.getAnnotation(Path.class);
-
+		
 		// get parameter
 		final Class<?>[] parameterTypes = method.getParameterTypes();
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-
+		
 		// values from parameters
 		final List<String> queryParams = Lists.newArrayList();
 		final HashMap<String, HeaderDefinition> methodRequestHeader = Maps.newHashMap();
@@ -181,9 +169,9 @@ public class RestDocGenerator {
 			final Class<?> paramType = parameterTypes[i];
 			final Annotation[] paramAnnotations = parameterAnnotations[i];
 			final HeaderDefinition headerDefinition = new HeaderDefinition();
-
+			
 			final AnnotationMap map = new AnnotationMap(paramAnnotations);
-
+			
 			if (map.hasAnnotation(QueryParam.class)) {
 				final String name = map.getAnnotation(QueryParam.class).value();
 				queryParams.add(name);
@@ -217,7 +205,7 @@ public class RestDocGenerator {
 				}
 			}
 		}
-
+		
 		String path = basepath;
 		if (pathAnnotation != null) {
 			path += pathAnnotation.value();
@@ -225,13 +213,13 @@ public class RestDocGenerator {
 		for (final String string : queryParams) {
 			path += "{?" + string + "}";
 		}
-
+		
 		final String id = docAnnotation.id();
 		final String resourceDescription = docAnnotation.resourceDescription();
-
+		
 		final String methodDescription = docAnnotation.methodDescription();
 		final String methodType = RestDocGenerator.getHTTPVerb(method);
-
+		
 		RestResource restResource = this.resources.get(path);
 		if (restResource == null) {
 			restResource = new RestResource();
@@ -244,23 +232,23 @@ public class RestDocGenerator {
 			restResource.getParams().putAll(methodParams);
 			this.ext.newResource(restResource);
 		}
-
+		
 		if (restResource.getMethods().containsKey(methodType)) {
 			throw new RuntimeException("Duplicate method detected for resource: " + path + " -> " + methodType);
 		}
-
+		
 		final MethodDefinition def = new MethodDefinition();
 		def.setDescription(methodDescription);
 		def.getHeaders().putAll(methodRequestHeader);
 		def.getAccepts().addAll(this.getAccepts(method));
 		def.getStatusCodes().putAll(this.getStatusCodes(method));
 		def.setResponse(this.getMethodResponse(method));
-
+		
 		restResource.getMethods().put(methodType, def);
-
+		
 		this.ext.newMethod(restResource, def, method);
 	}
-
+	
 	private ResponseDefinition getMethodResponse(final Method method) {
 		final ResponseDefinition def = new ResponseDefinition();
 		if (method.isAnnotationPresent(RestDocResponse.class)) {
@@ -274,7 +262,7 @@ public class RestDocGenerator {
 					def.type(restDocType.type(), restDocType.schema());
 				}
 			}
-
+			
 			final RestDocHeader[] headers = docResponse.headers();
 			for (final RestDocHeader restDocHeader : headers) {
 				def.header(restDocHeader.name(), restDocHeader.description(), restDocHeader.required());
@@ -282,7 +270,7 @@ public class RestDocGenerator {
 		}
 		return def;
 	}
-
+	
 	private String getSchemaFromClass(final Class<?> schemaClass) {
 		if (schemaClass.isAnnotationPresent(RestDocSchema.class)) {
 			final RestDocSchema docSchema = schemaClass.getAnnotation(RestDocSchema.class);
@@ -303,7 +291,7 @@ public class RestDocGenerator {
 		final String s = String.format("SchemaClass %s is not annotated with RestDocSchema.", schemaClass.getCanonicalName());
 		throw new RestDocException(s);
 	}
-
+	
 	private Map<String, String> getStatusCodes(final Method method) {
 		final Map<String, String> codeMap = Maps.newHashMap();
 		if (method.isAnnotationPresent(RestDocReturnCodes.class)) {
@@ -314,7 +302,7 @@ public class RestDocGenerator {
 		}
 		return codeMap;
 	}
-
+	
 	private Collection<Representation> getAccepts(final Method method) {
 		final Collection<Representation> list = Lists.newArrayList();
 		if (method.isAnnotationPresent(RestDocAccept.class)) {
@@ -331,7 +319,7 @@ public class RestDocGenerator {
 		}
 		return list;
 	}
-
+	
 	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam, final Class<?> paramType) {
 		definition.setDescription(docParam.description());
 		final RestDocValidation[] restDocValidations = docParam.validations();
@@ -354,7 +342,7 @@ public class RestDocGenerator {
 			definition.getValidations().add(new ParamValidation("match", "true|false"));
 		}
 	}
-
+	
 	private static String getHTTPVerb(final Method method) {
 		final Annotation[] annotations = method.getAnnotations();
 		for (final Annotation annotation : annotations) {
@@ -365,17 +353,15 @@ public class RestDocGenerator {
 		}
 		throw new RuntimeException("No suitable method found for method: " + method.toString());
 	}
-
+	
 	// ######################################################
 	// Retrieving RestDoc for given path
 	// ######################################################
-
+	
 	/**
-	 * @param path
-	 *            the basepath to start
+	 * @param path the basepath to start
 	 * @return the {@link RestDoc} as string
-	 * @throws RestDocException
-	 *             on generation error
+	 * @throws RestDocException on generation error
 	 */
 	public String getRestDocStringForPath(final String path) throws RestDocException {
 		if (!this.initialized.get()) {
@@ -388,17 +374,17 @@ public class RestDocGenerator {
 			throw new RestDocException(e);
 		}
 	}
-
+	
 	private RestDoc getDoc(final String path) {
 		final RestDoc doc = new RestDoc();
 		// populate schemas
 		doc.setSchemas(new HashMap<String, Schema>(this.schemaMap));
-
+		
 		// populate header section
 		doc.getHeaders().getRequestHeader().putAll(this.requestHeaderMap);
 		doc.getHeaders().getResponseHeader().putAll(this.responseHeaderMap);
 		doc.getHeaders().getAdditionalFields().putAll(this.globalAdditional);
-
+		
 		// populate resource section
 		final Set<Entry<String, RestResource>> entrySet = this.resources.entrySet();
 		for (final Entry<String, RestResource> entry : entrySet) {
@@ -406,77 +392,78 @@ public class RestDocGenerator {
 				doc.getResources().add(entry.getValue());
 			}
 		}
-
+		
 		this.ext.renderDoc(path, doc);
-
+		
 		return doc;
 	}
-
+	
 	// ##############################################
 	// Extension registry and wrapper
 	// ##############################################
-
+	
 	/**
-	 * @param extension
-	 *            the {@link IRestDocGeneratorExtension} to register
+	 * @param extension the {@link IRestDocGeneratorExtension} to register
 	 */
 	public void registerGeneratorExtension(final IRestDocGeneratorExtension extension) {
 		this.ext.exts.add(extension);
 	}
-
+	
+	
 	private class RDGEWrapper implements IRestDocGeneratorExtension {
-
+		
 		private final LinkedList<IRestDocGeneratorExtension> exts = new LinkedList<IRestDocGeneratorExtension>();
-
+		
+		
 		@Override
 		public void newResource(final RestResource restResource) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.newResource(restResource);
 			}
 		}
-
+		
 		@Override
 		public void queryParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.queryParam(name, definition, paramType, map);
 			}
 		}
-
+		
 		@Override
 		public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.pathParam(name, definition, paramType, map);
 			}
 		}
-
+		
 		@Override
 		public void headerParam(final String name, final HeaderDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.headerParam(name, definition, paramType, map);
 			}
 		}
-
+		
 		@Override
 		public void newMethod(final RestResource restResource, final MethodDefinition def, final Method method) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.newMethod(restResource, def, method);
 			}
 		}
-
+		
 		@Override
 		public void newSchema(final String schemaURI, final Schema s, final Class<?> schemaClass) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.newSchema(schemaURI, s, schemaClass);
 			}
 		}
-
+		
 		@Override
 		public void renderDoc(final String path, final RestDoc doc) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.renderDoc(path, doc);
 			}
 		}
-
+		
 	}
-
+	
 }

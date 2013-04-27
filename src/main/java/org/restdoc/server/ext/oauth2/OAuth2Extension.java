@@ -9,16 +9,17 @@ import org.restdoc.api.RestResource;
 import org.restdoc.server.impl.RestDocGeneratorExtensionAdapter;
 
 public class OAuth2Extension extends RestDocGeneratorExtensionAdapter {
-
+	
 	private String clientaccess;
 	private String[] grants;
 	private String tokenEndpoint;
 	private String authEndpoint;
-
+	
+	
 	public OAuth2Extension() {
 		//
 	}
-
+	
 	/**
 	 * @param tokenEndpoint
 	 * @param authEndpoint
@@ -29,39 +30,39 @@ public class OAuth2Extension extends RestDocGeneratorExtensionAdapter {
 		this.authEndpoint = authEndpoint;
 		this.grants = grants;
 	}
-
+	
 	public String getClientaccess() {
 		return this.clientaccess;
 	}
-
+	
 	public void setClientaccess(final String clientaccess) {
 		this.clientaccess = clientaccess;
 	}
-
+	
 	public String[] getGrants() {
 		return this.grants;
 	}
-
+	
 	public void setGrants(final String[] grants) {
 		this.grants = grants;
 	}
-
+	
 	public String getTokenEndpoint() {
 		return this.tokenEndpoint;
 	}
-
+	
 	public void setTokenEndpoint(final String tokenEndpoint) {
 		this.tokenEndpoint = tokenEndpoint;
 	}
-
+	
 	public String getAuthEndpoint() {
 		return this.authEndpoint;
 	}
-
+	
 	public void setAuthEndpoint(final String authEndpoint) {
 		this.authEndpoint = authEndpoint;
 	}
-
+	
 	@Override
 	public void newMethod(final RestResource restResource, final MethodDefinition def, final Method method) {
 		if (method.isAnnotationPresent(Scopes.class)) {
@@ -69,13 +70,13 @@ public class OAuth2Extension extends RestDocGeneratorExtensionAdapter {
 			def.setAdditionalField("scopes", scopes.value());
 		}
 	}
-
+	
 	@Override
 	public void renderDoc(final String path, final RestDoc doc) {
 		final HashMap<String, Object> endpoints = new HashMap<String, Object>();
 		endpoints.put("token", this.tokenEndpoint);
 		endpoints.put("authorize", this.authEndpoint);
-
+		
 		final HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("endpoints", endpoints);
 		map.put("grants", this.grants);
@@ -84,5 +85,5 @@ public class OAuth2Extension extends RestDocGeneratorExtensionAdapter {
 		}
 		doc.setAdditionalField("oauth2", map);
 	}
-
+	
 }

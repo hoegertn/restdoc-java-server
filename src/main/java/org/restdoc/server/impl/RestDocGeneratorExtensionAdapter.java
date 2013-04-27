@@ -13,40 +13,40 @@ import org.restdoc.api.Schema;
  * 
  */
 public class RestDocGeneratorExtensionAdapter implements IRestDocGeneratorExtension {
-
+	
 	@Override
 	public void newResource(final RestResource restResource) {
 		//
 	}
-
+	
 	@Override
 	public void queryParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 		//
 	}
-
+	
 	@Override
 	public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 		//
 	}
-
+	
 	@Override
 	public void headerParam(final String name, final HeaderDefinition definition, final Class<?> paramType, final AnnotationMap map) {
 		//
 	}
-
+	
 	@Override
 	public void newMethod(final RestResource restResource, final MethodDefinition def, final Method method) {
 		//
 	}
-
+	
 	@Override
 	public void newSchema(final String schemaURI, final Schema s, final Class<?> schemaClass) {
 		//
 	}
-
+	
 	@Override
 	public void renderDoc(final String path, final RestDoc doc) {
 		//
 	}
-
+	
 }

@@ -8,19 +8,19 @@ import java.util.Map;
  * a map of annotations
  */
 public class AnnotationMap {
-
+	
 	final Map<Class<? extends Annotation>, Annotation> paMap = new HashMap<Class<? extends Annotation>, Annotation>();
-
+	
+	
 	/**
-	 * @param annotations
-	 *            the annotations
+	 * @param annotations the annotations
 	 */
 	public AnnotationMap(final Annotation[] annotations) {
 		for (final Annotation annotation : annotations) {
 			this.paMap.put(annotation.annotationType(), annotation);
 		}
 	}
-
+	
 	/**
 	 * @param a
 	 * @return true if this map contains given annotation
@@ -28,7 +28,7 @@ public class AnnotationMap {
 	public boolean hasAnnotation(final Class<? extends Annotation> a) {
 		return this.paMap.containsKey(a);
 	}
-
+	
 	/**
 	 * @param type
 	 * @return the found annotation or null
@@ -40,5 +40,5 @@ public class AnnotationMap {
 		}
 		return null;
 	}
-
+	
 }
