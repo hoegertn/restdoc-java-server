@@ -9,18 +9,18 @@ import java.lang.annotation.Target;
  * @author thoeger
  * 
  */
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocResponse {
-
+	
 	/**
 	 * @return the array of response types
 	 */
 	RestDocType[] types();
-
+	
 	/**
 	 * @return the array of response headers
 	 */
 	RestDocHeader[] headers() default {};
-
+	
 }

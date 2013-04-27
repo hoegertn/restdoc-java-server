@@ -9,23 +9,23 @@ import java.lang.annotation.Target;
  * @author thoeger
  * 
  */
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocType {
-
+	
 	/**
 	 * @return the response type e.g. text/plain or application/json
 	 */
 	String type();
-
+	
 	/**
 	 * @return the schema URI
 	 */
 	String schema() default "";
-
+	
 	/**
 	 * @return the schema Class
 	 */
 	Class<?> schemaClass() default Object.class;
-
+	
 }

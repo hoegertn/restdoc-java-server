@@ -27,7 +27,7 @@ import com.google.common.collect.Maps;
  */
 @Path("/api/strings")
 public class MyCrudBean implements IProvideRestDoc {
-
+	
 	/**
 	 * @param id
 	 * @return the message
@@ -38,7 +38,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	public List<String> getList() {
 		return Lists.newArrayList();
 	}
-
+	
 	/**
 	 * @param id
 	 * @return the message
@@ -50,7 +50,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	public String getSingleItem(@PathParam("id") String id) {
 		throw new WebApplicationException(Status.NOT_FOUND);
 	}
-
+	
 	/**
 	 * @param id
 	 * @param content
@@ -63,10 +63,9 @@ public class MyCrudBean implements IProvideRestDoc {
 	public String updateItem(@PathParam("id") String id, String content) {
 		return content;
 	}
-
+	
 	/**
-	 * @param msg
-	 *            the message
+	 * @param msg the message
 	 * @return the created message
 	 */
 	@POST
@@ -75,7 +74,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	public String createItem(String msg) {
 		return msg;
 	}
-
+	
 	/**
 	 * @param id
 	 */
@@ -83,29 +82,29 @@ public class MyCrudBean implements IProvideRestDoc {
 	public void deleteItem(@PathParam("id") String id) {
 		// delete object
 	}
-
+	
 	@Override
 	public RestResource[] getRestDocResources() {
 		final RestResource rootRes = new RestResource().id("getItemlist").description("list of items").path("/api/strings");
 		rootRes.method("GET", new MethodDefinition().description("get list of items").statusCode("200", "OK"));
-
+		
 		final MethodDefinition createItem = new MethodDefinition().description("create new item").statusCode("201", "Created");
 		createItem.response(new ResponseDefinition().header("Location", "URI of the created resource", true));
 		rootRes.method("POST", createItem);
-
+		
 		final RestResource idRes = new RestResource().id("getItem").description("single items").path("/api/strings/{id}");
 		idRes.param("id", "the item id");
-
+		
 		idRes.method("GET", new MethodDefinition().description("get item").statusCode("200", "OK"));
 		idRes.method("POST", new MethodDefinition().description("update item").statusCode("200", "OK"));
 		idRes.method("DELETE", new MethodDefinition().description("delete item").statusCode("200", "OK"));
-
-		return new RestResource[] { rootRes, idRes };
+		
+		return new RestResource[] {rootRes, idRes};
 	}
-
+	
 	@Override
 	public HashMap<String, Schema> getRestDocSchemas() {
 		return Maps.newHashMap();
 	}
-
+	
 }

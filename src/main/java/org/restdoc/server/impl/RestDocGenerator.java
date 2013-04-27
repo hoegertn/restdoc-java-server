@@ -52,38 +52,36 @@ import com.google.common.collect.Maps;
  * 
  */
 public class RestDocGenerator {
-
+	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+	
 	private final HashMap<String, RestResource> resources = Maps.newHashMap();
-
+	
 	private Map<String, HeaderDefinition> requestHeaderMap;
-
+	
 	private Map<String, HeaderDefinition> responseHeaderMap;
-
+	
 	private HashMap<String, Schema> schemaMap;
-
+	
 	private ObjectMapper mapper;
-
+	
+	
 	/**
 	 * initialize the RestDoc Generator
 	 * 
-	 * @param classes
-	 *            the array of JAX-RS classes
-	 * @param globalHeader
-	 *            the global headers
-	 * @param baseURI
-	 *            an optional base uri like "/api"
+	 * @param classes the array of JAX-RS classes
+	 * @param globalHeader the global headers
+	 * @param baseURI an optional base uri like "/api"
 	 */
 	public void init(Class<?>[] classes, GlobalHeader globalHeader, String baseURI) {
 		this.logger.info("Starting generation of RestDoc");
 		this.logger.info("Searching for RestDoc API classes");
-
+		
 		this.mapper = RestDocParser.createMapper();
-
+		
 		this.requestHeaderMap = globalHeader.getRequestHeader();
 		this.responseHeaderMap = globalHeader.getResponseHeader();
-
+		
 		// Avoid NPE if user returned null
 		if (this.requestHeaderMap == null) {
 			this.requestHeaderMap = Maps.newHashMap();
@@ -94,14 +92,14 @@ public class RestDocGenerator {
 		if (this.schemaMap == null) {
 			this.schemaMap = Maps.newHashMap();
 		}
-
+		
 		for (final Class<?> apiClass : classes) {
 			// check if class provides predefined RestDoc
 			boolean scanNeeded = true;
 			if (Arrays.asList(apiClass.getInterfaces()).contains(IProvideRestDoc.class)) {
 				try {
 					this.logger.info("Class {} provides predefined RestDoc", apiClass.getCanonicalName());
-					final IProvideRestDoc apiObject = (IProvideRestDoc)apiClass.newInstance();
+					final IProvideRestDoc apiObject = (IProvideRestDoc) apiClass.newInstance();
 					final RestResource[] restDocResources = apiObject.getRestDocResources();
 					for (final RestResource restResource : restDocResources) {
 						this.resources.put(restResource.getPath(), restResource);
@@ -117,16 +115,16 @@ public class RestDocGenerator {
 			}
 		}
 	}
-
+	
 	private void addResourcesOfClass(Class<?> apiClass, String baseURI) {
 		this.logger.info("Scanning class: {}", apiClass.getCanonicalName());
-
+		
 		String basepath = baseURI;
 		if (apiClass.isAnnotationPresent(Path.class)) {
 			final Path path = apiClass.getAnnotation(Path.class);
 			basepath += path.value();
 		}
-
+		
 		// find methods
 		final Method[] methods = apiClass.getMethods();
 		for (final Method method : methods) {
@@ -136,16 +134,16 @@ public class RestDocGenerator {
 			}
 		}
 	}
-
+	
 	private void addResourceMethod(String basepath, Method method) {
 		// get needed annotations from method
 		final org.restdoc.server.impl.annotations.RestDoc docAnnotation = method.getAnnotation(org.restdoc.server.impl.annotations.RestDoc.class);
 		final Path pathAnnotation = method.getAnnotation(Path.class);
-
+		
 		// get parameter
 		final Class<?>[] parameterTypes = method.getParameterTypes();
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-
+		
 		// values from parameters
 		final List<String> queryParams = Lists.newArrayList();
 		final HashMap<String, HeaderDefinition> methodRequestHeader = Maps.newHashMap();
@@ -155,33 +153,33 @@ public class RestDocGenerator {
 			final Annotation[] paramAnnotations = parameterAnnotations[i];
 			final ParamDefinition definition = new ParamDefinition();
 			final HeaderDefinition headerDefinition = new HeaderDefinition();
-
+			
 			for (final Annotation annotation : paramAnnotations) {
 				if (annotation instanceof QueryParam) {
-					final QueryParam queryParam = (QueryParam)annotation;
+					final QueryParam queryParam = (QueryParam) annotation;
 					final String name = queryParam.value();
 					queryParams.add(name);
 					methodParams.put(name, definition);
 				} else if (annotation instanceof PathParam) {
-					final PathParam pathParam = (PathParam)annotation;
+					final PathParam pathParam = (PathParam) annotation;
 					final String name = pathParam.value();
 					methodParams.put(name, definition);
 				} else if (annotation instanceof HeaderParam) {
-					final HeaderParam headerParam = (HeaderParam)annotation;
+					final HeaderParam headerParam = (HeaderParam) annotation;
 					final String name = headerParam.value();
 					if (!this.requestHeaderMap.containsKey(name)) {
 						methodRequestHeader.put(name, headerDefinition);
 					}
 				} else if (annotation instanceof RestDocParam) {
-					this.parseRestDocParameter(definition, (RestDocParam)annotation);
+					this.parseRestDocParameter(definition, (RestDocParam) annotation);
 				} else if (annotation instanceof RestDocHeader) {
-					final RestDocHeader docHeader = (RestDocHeader)annotation;
+					final RestDocHeader docHeader = (RestDocHeader) annotation;
 					headerDefinition.setDescription(docHeader.description());
 					headerDefinition.setRequired(docHeader.required());
 				}
 			}
 		}
-
+		
 		String path = basepath;
 		if (pathAnnotation != null) {
 			path += pathAnnotation.value();
@@ -189,13 +187,13 @@ public class RestDocGenerator {
 		for (final String string : queryParams) {
 			path += "{?" + string + "}";
 		}
-
+		
 		final String id = docAnnotation.id();
 		final String resourceDescription = docAnnotation.resourceDescription();
-
+		
 		final String methodDescription = docAnnotation.methodDescription();
 		final String methodType = this.getHTTPVerb(method);
-
+		
 		RestResource restResource = this.resources.get(path);
 		if (restResource == null) {
 			restResource = new RestResource();
@@ -207,21 +205,21 @@ public class RestDocGenerator {
 			restResource.setDescription(resourceDescription);
 			restResource.getParams().putAll(methodParams);
 		}
-
+		
 		if (restResource.getMethods().containsKey(methodType)) {
 			throw new RuntimeException("Duplicate method detected for resource: " + path + " -> " + methodType);
 		}
-
+		
 		final MethodDefinition def = new MethodDefinition();
 		def.setDescription(methodDescription);
 		def.getHeaders().putAll(methodRequestHeader);
 		def.getAccepts().addAll(this.getAccepts(method));
 		def.getStatusCodes().putAll(this.getStatusCodes(method));
 		def.setResponse(this.getMethodResponse(method));
-
+		
 		restResource.getMethods().put(methodType, def);
 	}
-
+	
 	private ResponseDefinition getMethodResponse(Method method) {
 		final ResponseDefinition def = new ResponseDefinition();
 		if (method.isAnnotationPresent(RestDocResponse.class)) {
@@ -235,7 +233,7 @@ public class RestDocGenerator {
 					def.type(restDocType.type(), restDocType.schema());
 				}
 			}
-
+			
 			final RestDocHeader[] headers = docResponse.headers();
 			for (final RestDocHeader restDocHeader : headers) {
 				def.header(restDocHeader.name(), restDocHeader.description(), restDocHeader.required());
@@ -243,7 +241,7 @@ public class RestDocGenerator {
 		}
 		return def;
 	}
-
+	
 	private String getSchemaFromClass(Class<?> schemaClass) {
 		if (schemaClass.isAnnotationPresent(RestDocSchema.class)) {
 			final RestDocSchema docSchema = schemaClass.getAnnotation(RestDocSchema.class);
@@ -263,7 +261,7 @@ public class RestDocGenerator {
 		this.logger.error("SchemaClass {} is not annotated with RestDocSchema.", schemaClass.getCanonicalName());
 		return "";
 	}
-
+	
 	private Map<String, String> getStatusCodes(Method method) {
 		final Map<String, String> codeMap = Maps.newHashMap();
 		if (method.isAnnotationPresent(RestDocReturnCodes.class)) {
@@ -274,7 +272,7 @@ public class RestDocGenerator {
 		}
 		return codeMap;
 	}
-
+	
 	private Collection<Representation> getAccepts(Method method) {
 		final Collection<Representation> list = Lists.newArrayList();
 		if (method.isAnnotationPresent(RestDocAccept.class)) {
@@ -291,7 +289,7 @@ public class RestDocGenerator {
 		}
 		return list;
 	}
-
+	
 	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam) {
 		definition.setDescription(docParam.description());
 		final RestDocValidation[] restDocValidations = docParam.validations();
@@ -302,7 +300,7 @@ public class RestDocGenerator {
 			definition.getValidations().add(v);
 		}
 	}
-
+	
 	private String getHTTPVerb(Method method) {
 		final Annotation[] annotations = method.getAnnotations();
 		for (final Annotation annotation : annotations) {
@@ -313,26 +311,25 @@ public class RestDocGenerator {
 		}
 		throw new RuntimeException("No suitable method found for method: " + method.toString());
 	}
-
+	
 	/**
-	 * @param path
-	 *            the basepath to start
+	 * @param path the basepath to start
 	 * @return the {@link RestDoc} as string
 	 */
 	public String getRestDocStringForPath(String path) {
 		final RestDoc doc = this.getDoc(path);
 		return RestDocParser.writeRestDoc(doc);
 	}
-
+	
 	private RestDoc getDoc(String path) {
 		final RestDoc doc = new RestDoc();
 		// populate schemas
 		doc.setSchemas(this.schemaMap);
-
+		
 		// populate header section
 		doc.getHeaders().getRequestHeader().putAll(this.requestHeaderMap);
 		doc.getHeaders().getResponseHeader().putAll(this.responseHeaderMap);
-
+		
 		// populate resource section
 		final Set<Entry<String, RestResource>> entrySet = this.resources.entrySet();
 		for (final Entry<String, RestResource> entry : entrySet) {
@@ -340,8 +337,8 @@ public class RestDocGenerator {
 				doc.getResources().add(entry.getValue());
 			}
 		}
-
+		
 		return doc;
 	}
-
+	
 }

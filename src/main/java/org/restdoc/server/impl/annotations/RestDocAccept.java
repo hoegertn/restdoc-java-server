@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
  * @author thoeger
  * 
  */
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocAccept {
-
+	
 	/**
 	 * @return the array of response types
 	 */
 	RestDocType[] value();
-
+	
 }

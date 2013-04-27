@@ -9,18 +9,18 @@ import java.lang.annotation.Target;
  * @author thoeger
  * 
  */
-@Target({ ElementType.PARAMETER })
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocValidation {
-
+	
 	/**
 	 * @return the validation type
 	 */
 	String type();
-
+	
 	/**
 	 * @return the validation pattern
 	 */
 	String pattern();
-
+	
 }

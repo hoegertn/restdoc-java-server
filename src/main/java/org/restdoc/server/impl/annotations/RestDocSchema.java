@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
  * @author thoeger
  * 
  */
-@Target({ ElementType.TYPE })
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocSchema {
-
+	
 	/**
 	 * @return the URI of the schema
 	 */
 	String value();
-
+	
 }

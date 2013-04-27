@@ -12,15 +12,15 @@ import org.restdoc.api.Schema;
  * 
  */
 public interface IProvideRestDoc {
-
+	
 	/**
 	 * @return the array of resources this class provides
 	 */
 	RestResource[] getRestDocResources();
-
+	
 	/**
 	 * @return a map of provided schemas
 	 */
 	HashMap<String, Schema> getRestDocSchemas();
-
+	
 }

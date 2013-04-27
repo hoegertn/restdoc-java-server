@@ -29,17 +29,18 @@ import com.google.common.collect.Maps;
  */
 @Path("/api")
 public class MyRSBean {
-
+	
 	private final HashMap<String, String> messages = Maps.newHashMap();
-
+	
+	
 	/**
 	 * @param id
 	 * @return the message
 	 */
 	@GET
 	@RestDoc(id = "messageList", resourceDescription = "A list of messages", methodDescription = "List all messages")
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") }, headers = { @RestDocHeader(name = "X-Call", description = "Remaining calls", required = false) })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")}, headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	public String getMessageList() {
@@ -51,7 +52,7 @@ public class MyRSBean {
 		}
 		return sb.toString();
 	}
-
+	
 	/**
 	 * @param id
 	 * @return the message
@@ -59,8 +60,8 @@ public class MyRSBean {
 	@Path("/{id}")
 	@GET
 	@RestDoc(id = "message", resourceDescription = "A single message", methodDescription = "Read the message content")
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found") })
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	public String getMessage(@PathParam("id") @RestDocParam(description = "The message id") String id) {
@@ -69,7 +70,7 @@ public class MyRSBean {
 		}
 		throw new WebApplicationException(Status.NOT_FOUND);
 	}
-
+	
 	/**
 	 * @param id
 	 * @param content
@@ -78,30 +79,29 @@ public class MyRSBean {
 	@Path("/{id}")
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({ @RestDocType(type = "text/plain") })
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocAccept({@RestDocType(type = "text/plain")})
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
 	public String setMessage(@PathParam("id") String id, String content) {
 		this.messages.put(id, content);
 		return content;
 	}
-
+	
 	/**
-	 * @param msg
-	 *            the message
+	 * @param msg the message
 	 * @return the created message
 	 */
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({ @RestDocType(type = "application/json", schemaClass = Msg.class) })
-	@RestDocResponse(types = { @RestDocType(type = "text/plain") })
-	@RestDocReturnCodes({ @RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed") })
+	@RestDocAccept({@RestDocType(type = "application/json", schemaClass = Msg.class)})
+	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("application/json")
 	public String setMessage(Msg msg) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
-
+	
 }
