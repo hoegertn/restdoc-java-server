@@ -11,7 +11,7 @@ package org.restdoc.server.impl;
  * and limitations under the License. #L%
  */
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.restdoc.api.RestResource;
 import org.restdoc.api.Schema;
@@ -29,6 +29,6 @@ public interface IProvideRestDoc {
 	/**
 	 * @return a map of provided schemas
 	 */
-	HashMap<String, Schema> getRestDocSchemas();
+	Map<String, Schema> getRestDocSchemas();
 	
 }

@@ -80,7 +80,7 @@ public class OAuth2Extension extends RestDocGeneratorExtensionAdapter {
 		final HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("endpoints", endpoints);
 		map.put("grants", this.grants);
-		if (this.clientaccess != null && !this.clientaccess.isEmpty()) {
+		if ((this.clientaccess != null) && !this.clientaccess.isEmpty()) {
 			map.put("clientaccess", this.clientaccess);
 		}
 		doc.setAdditionalField("oauth2", map);

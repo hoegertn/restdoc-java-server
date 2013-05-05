@@ -65,11 +65,17 @@ import org.slf4j.LoggerFactory;
  */
 public class RestDocGenerator {
 	
+	private static final String PATTERN_BOOL = "true|false";
+	
+	private static final String PATTERN_SIGNED_DECIMAL = "[-+]?[0-9]*\\.?[0-9]+";
+	
+	private static final String PATTERN_SIGNED_INT = "[-+]?[0-9]+";
+	
 	private final AtomicBoolean initialized = new AtomicBoolean(false);
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	private final HashMap<String, RestResource> resources = Maps.newHashMap();
+	private final Map<String, RestResource> resources = Maps.newHashMap();
 	
 	private final ObjectMapper mapper = RestDocParser.createMapper();
 	
@@ -166,44 +172,7 @@ public class RestDocGenerator {
 		final HashMap<String, HeaderDefinition> methodRequestHeader = Maps.newHashMap();
 		final HashMap<String, ParamDefinition> methodParams = Maps.newHashMap();
 		for (int i = 0; i < parameterTypes.length; i++) {
-			final Class<?> paramType = parameterTypes[i];
-			final Annotation[] paramAnnotations = parameterAnnotations[i];
-			final HeaderDefinition headerDefinition = new HeaderDefinition();
-			
-			final AnnotationMap map = new AnnotationMap(paramAnnotations);
-			
-			if (map.hasAnnotation(QueryParam.class)) {
-				final String name = map.getAnnotation(QueryParam.class).value();
-				queryParams.add(name);
-				final ParamDefinition definition = new ParamDefinition();
-				if (map.hasAnnotation(RestDocParam.class)) {
-					this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
-				}
-				this.ext.queryParam(name, definition, paramType, map);
-				methodParams.put(name, definition);
-			}
-			if (map.hasAnnotation(PathParam.class)) {
-				final String name = map.getAnnotation(PathParam.class).value();
-				final ParamDefinition definition = new ParamDefinition();
-				if (map.hasAnnotation(RestDocParam.class)) {
-					this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
-				}
-				this.ext.pathParam(name, definition, paramType, map);
-				methodParams.put(name, definition);
-			}
-			if (map.hasAnnotation(HeaderParam.class)) {
-				final String name = map.getAnnotation(HeaderParam.class).value();
-				final HeaderDefinition definition = new HeaderDefinition();
-				if (!this.requestHeaderMap.containsKey(name)) {
-					if (map.hasAnnotation(RestDocHeader.class)) {
-						final RestDocHeader docHeader = map.getAnnotation(RestDocHeader.class);
-						headerDefinition.setDescription(docHeader.description());
-						headerDefinition.setRequired(docHeader.required());
-					}
-					this.ext.headerParam(name, definition, paramType, map);
-					methodRequestHeader.put(name, headerDefinition);
-				}
-			}
+			this.parseMethodParameter(queryParams, methodRequestHeader, methodParams, parameterTypes[i], parameterAnnotations[i]);
 		}
 		
 		String path = basepath;
@@ -234,7 +203,7 @@ public class RestDocGenerator {
 		}
 		
 		if (restResource.getMethods().containsKey(methodType)) {
-			throw new RuntimeException("Duplicate method detected for resource: " + path + " -> " + methodType);
+			throw new RestDocException("Duplicate method detected for resource: " + path + " -> " + methodType);
 		}
 		
 		final MethodDefinition def = new MethodDefinition();
@@ -247,6 +216,52 @@ public class RestDocGenerator {
 		restResource.getMethods().put(methodType, def);
 		
 		this.ext.newMethod(restResource, def, method);
+	}
+	
+	/**
+	 * @param queryParams
+	 * @param methodRequestHeader
+	 * @param methodParams
+	 * @param paramType
+	 * @param paramAnnotations
+	 */
+	protected void parseMethodParameter(final List<String> queryParams, final HashMap<String, HeaderDefinition> methodRequestHeader, final HashMap<String, ParamDefinition> methodParams, final Class<?> paramType, final Annotation[] paramAnnotations) {
+		final HeaderDefinition headerDefinition = new HeaderDefinition();
+		
+		final AnnotationMap map = new AnnotationMap(paramAnnotations);
+		
+		if (map.hasAnnotation(QueryParam.class)) {
+			final String name = map.getAnnotation(QueryParam.class).value();
+			queryParams.add(name);
+			final ParamDefinition definition = new ParamDefinition();
+			if (map.hasAnnotation(RestDocParam.class)) {
+				this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
+			}
+			this.ext.queryParam(name, definition, paramType, map);
+			methodParams.put(name, definition);
+		}
+		if (map.hasAnnotation(PathParam.class)) {
+			final String name = map.getAnnotation(PathParam.class).value();
+			final ParamDefinition definition = new ParamDefinition();
+			if (map.hasAnnotation(RestDocParam.class)) {
+				this.parseRestDocParameter(definition, map.getAnnotation(RestDocParam.class), paramType);
+			}
+			this.ext.pathParam(name, definition, paramType, map);
+			methodParams.put(name, definition);
+		}
+		if (map.hasAnnotation(HeaderParam.class)) {
+			final String name = map.getAnnotation(HeaderParam.class).value();
+			final HeaderDefinition definition = new HeaderDefinition();
+			if (!this.requestHeaderMap.containsKey(name)) {
+				if (map.hasAnnotation(RestDocHeader.class)) {
+					final RestDocHeader docHeader = map.getAnnotation(RestDocHeader.class);
+					headerDefinition.setDescription(docHeader.description());
+					headerDefinition.setRequired(docHeader.required());
+				}
+				this.ext.headerParam(name, definition, paramType, map);
+				methodRequestHeader.put(name, headerDefinition);
+			}
+		}
 	}
 	
 	private ResponseDefinition getMethodResponse(final Method method) {
@@ -330,15 +345,15 @@ public class RestDocGenerator {
 			definition.getValidations().add(v);
 		}
 		if (paramType.equals(Long.class)) {
-			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]+"));
+			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_INT));
 		} else if (paramType.equals(Integer.class)) {
-			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]+"));
+			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_INT));
 		} else if (paramType.equals(Double.class)) {
-			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]*\\.?[0-9]+"));
+			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_DECIMAL));
 		} else if (paramType.equals(BigDecimal.class)) {
-			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]*\\.?[0-9]+"));
+			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_DECIMAL));
 		} else if (paramType.equals(Boolean.class)) {
-			definition.getValidations().add(new ParamValidation("match", "true|false"));
+			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_BOOL));
 		}
 	}
 	
@@ -350,7 +365,7 @@ public class RestDocGenerator {
 				return httpMethod.value();
 			}
 		}
-		throw new RuntimeException("No suitable method found for method: " + method.toString());
+		throw new RestDocException("No suitable method found for method: " + method.toString());
 	}
 	
 	// ######################################################
@@ -411,7 +426,7 @@ public class RestDocGenerator {
 	
 	private class RDGEWrapper implements IRestDocGeneratorExtension {
 		
-		private final LinkedList<IRestDocGeneratorExtension> exts = new LinkedList<IRestDocGeneratorExtension>();
+		private final List<IRestDocGeneratorExtension> exts = new LinkedList<IRestDocGeneratorExtension>();
 		
 		
 		@Override

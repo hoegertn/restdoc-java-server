@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public class AnnotationMap {
 	
-	final Map<Class<? extends Annotation>, Annotation> paMap = new HashMap<Class<? extends Annotation>, Annotation>();
+	private final Map<Class<? extends Annotation>, Annotation> paMap = new HashMap<Class<? extends Annotation>, Annotation>();
 	
 	
 	/**
