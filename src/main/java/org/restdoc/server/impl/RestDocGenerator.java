@@ -105,7 +105,7 @@ public class RestDocGenerator {
 			if (globalHeader.getResponseHeader() != null) {
 				this.responseHeaderMap.putAll(globalHeader.getResponseHeader());
 			}
-			if (globalHeader.getAdditionalFields() != null && !globalHeader.getAdditionalFields().isEmpty()) {
+			if ((globalHeader.getAdditionalFields() != null) && !globalHeader.getAdditionalFields().isEmpty()) {
 				this.globalAdditional.putAll(globalHeader.getAdditionalFields());
 			}
 		}
@@ -329,7 +329,6 @@ public class RestDocGenerator {
 			v.setPattern(validation.pattern());
 			definition.getValidations().add(v);
 		}
-		System.out.println("ParamType: " + paramType);
 		if (paramType.equals(Long.class)) {
 			definition.getValidations().add(new ParamValidation("match", "[-+]?[0-9]+"));
 		} else if (paramType.equals(Integer.class)) {
