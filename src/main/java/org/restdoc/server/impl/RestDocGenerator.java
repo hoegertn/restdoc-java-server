@@ -65,6 +65,8 @@ import org.slf4j.LoggerFactory;
  */
 public class RestDocGenerator {
 	
+	private static final String VALIDATION_MATCH = "match";
+	
 	private static final String PATTERN_BOOL = "true|false";
 	
 	private static final String PATTERN_SIGNED_DECIMAL = "[-+]?[0-9]*\\.?[0-9]+";
@@ -225,7 +227,7 @@ public class RestDocGenerator {
 	 * @param paramType
 	 * @param paramAnnotations
 	 */
-	protected void parseMethodParameter(final List<String> queryParams, final HashMap<String, HeaderDefinition> methodRequestHeader, final HashMap<String, ParamDefinition> methodParams, final Class<?> paramType, final Annotation[] paramAnnotations) {
+	protected void parseMethodParameter(final List<String> queryParams, final Map<String, HeaderDefinition> methodRequestHeader, final Map<String, ParamDefinition> methodParams, final Class<?> paramType, final Annotation[] paramAnnotations) {
 		final HeaderDefinition headerDefinition = new HeaderDefinition();
 		
 		final AnnotationMap map = new AnnotationMap(paramAnnotations);
@@ -345,15 +347,15 @@ public class RestDocGenerator {
 			definition.getValidations().add(v);
 		}
 		if (paramType.equals(Long.class)) {
-			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_INT));
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_SIGNED_INT));
 		} else if (paramType.equals(Integer.class)) {
-			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_INT));
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_SIGNED_INT));
 		} else if (paramType.equals(Double.class)) {
-			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_DECIMAL));
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_SIGNED_DECIMAL));
 		} else if (paramType.equals(BigDecimal.class)) {
-			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_SIGNED_DECIMAL));
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_SIGNED_DECIMAL));
 		} else if (paramType.equals(Boolean.class)) {
-			definition.getValidations().add(new ParamValidation("match", RestDocGenerator.PATTERN_BOOL));
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_BOOL));
 		}
 	}
 	
@@ -377,7 +379,7 @@ public class RestDocGenerator {
 	 * @return the {@link RestDoc} as string
 	 * @throws RestDocException on generation error
 	 */
-	public String getRestDocStringForPath(final String path) throws RestDocException {
+	public String getRestDocStringForPath(final String path) {
 		if (!this.initialized.get()) {
 			throw new RestDocException("Generator is not yet initialized");
 		}
