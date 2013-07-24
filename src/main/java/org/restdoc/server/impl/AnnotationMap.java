@@ -30,6 +30,19 @@ public class AnnotationMap {
 	}
 	
 	/**
+	 * @param a
+	 * @return true if this map contains any of the given annotations
+	 */
+	public boolean hasAnnotation(final Class<? extends Annotation>... a) {
+		for (Class<? extends Annotation> annotation : a) {
+			if (this.hasAnnotation(annotation)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * @param type
 	 * @return the found annotation or null
 	 */

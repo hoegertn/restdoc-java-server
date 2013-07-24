@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -115,6 +116,20 @@ public class MyRSBean {
 	@Produces("text/plain")
 	@Consumes("application/json")
 	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
+		return this.setMessage(msg.getId(), msg.getContent());
+	}
+	
+	/**
+	 * @param msg the message
+	 * @param lifetime the message ttl
+	 * @return the created message
+	 */
+	@PUT
+	@RestDoc(methodDescription = "Update the message content 2")
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
+	@Produces("text/plain")
+	@Consumes("application/json")
+	public String setMessageLessAnnotated(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
 	
