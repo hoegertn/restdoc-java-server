@@ -292,8 +292,10 @@ public class RestDocGenerator {
 		if (def.getTypes().isEmpty()) {
 			final String schema = this.getSchemaFromClassOrNull(method.getReturnType());
 			String[] mediaTypes = this.getProducesMediaType(method);
-			for (String mt : mediaTypes) {
-				def.type(mt, schema);
+			if (mediaTypes != null) {
+				for (String mt : mediaTypes) {
+					def.type(mt, schema);
+				}
 			}
 		}
 		return def;
