@@ -11,13 +11,14 @@ package org.restdoc.server.impl;
  * and limitations under the License. #L%
  */
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -25,17 +26,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.common.collect.Maps;
-
 import org.restdoc.server.ext.oauth2.Scopes;
 import org.restdoc.server.impl.annotations.RestDoc;
-import org.restdoc.server.impl.annotations.RestDocAccept;
 import org.restdoc.server.impl.annotations.RestDocHeader;
 import org.restdoc.server.impl.annotations.RestDocParam;
 import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
 import org.restdoc.server.impl.annotations.RestDocReturnCodes;
-import org.restdoc.server.impl.annotations.RestDocType;
+
+import com.google.common.collect.Maps;
 
 /**
  * 
@@ -52,7 +51,7 @@ public class MyRSBean {
 	 */
 	@GET
 	@RestDoc(id = "messageList", resourceDescription = "A list of messages", methodDescription = "List all messages")
-	@RestDocResponse(types = {@RestDocType(type = "text/plain")}, headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
+	@RestDocResponse(headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
@@ -70,10 +69,31 @@ public class MyRSBean {
 	 * @param id
 	 * @return the message
 	 */
+	@GET
+	@Path(".json")
+	@RestDoc(id = "messageList2", resourceDescription = "A list of messages", methodDescription = "List all messages")
+	@RestDocResponse(headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
+	@Produces("application/json")
+	public List<Msg> getMessageListJson() {
+		List<Msg> l = new ArrayList<Msg>();
+		final Set<String> keySet = this.messages.keySet();
+		for (final String key : keySet) {
+			Msg msg = new Msg();
+			msg.setId(key);
+			msg.setContent(this.messages.get(key));
+			l.add(msg);
+		}
+		return l;
+	}
+	
+	/**
+	 * @param id
+	 * @return the message
+	 */
 	@Path("/{id}")
 	@GET
 	@RestDoc(id = "message", resourceDescription = "A single message", methodDescription = "Read the message content")
-	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
@@ -92,8 +112,6 @@ public class MyRSBean {
 	@Path("/{id}")
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({@RestDocType(type = "text/plain")})
-	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("text/plain")
@@ -110,26 +128,10 @@ public class MyRSBean {
 	 */
 	@POST
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocAccept({@RestDocType(type = "application/json", schemaClass = Msg.class)})
-	@RestDocResponse(types = {@RestDocType(type = "text/plain")})
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("application/json")
 	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
-		return this.setMessage(msg.getId(), msg.getContent());
-	}
-	
-	/**
-	 * @param msg the message
-	 * @param lifetime the message ttl
-	 * @return the created message
-	 */
-	@PUT
-	@RestDoc(methodDescription = "Update the message content 2")
-	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
-	@Produces("text/plain")
-	@Consumes("application/json")
-	public String setMessageLessAnnotated(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
 	

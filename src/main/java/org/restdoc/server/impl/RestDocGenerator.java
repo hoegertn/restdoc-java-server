@@ -14,6 +14,7 @@ package org.restdoc.server.impl;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,20 +26,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import org.restdoc.api.GlobalHeader;
 import org.restdoc.api.HeaderDefinition;
@@ -57,11 +49,15 @@ import org.restdoc.server.impl.annotations.RestDocParam;
 import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
 import org.restdoc.server.impl.annotations.RestDocReturnCodes;
-import org.restdoc.server.impl.annotations.RestDocSchema;
 import org.restdoc.server.impl.annotations.RestDocType;
 import org.restdoc.server.impl.annotations.RestDocValidation;
+import org.restdoc.server.impl.util.MediaTypeResolver;
+import org.restdoc.server.impl.util.SchemaResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Use this class to generate RestDoc
@@ -81,8 +77,6 @@ public class RestDocGenerator {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private final Map<String, RestResource> resources = Maps.newHashMap();
-	
-	private final ObjectMapper mapper = RestDocParser.createMapper();
 	
 	private final Map<String, HeaderDefinition> requestHeaderMap = Maps.newConcurrentMap();
 	
@@ -169,7 +163,7 @@ public class RestDocGenerator {
 		final Path pathAnnotation = method.getAnnotation(Path.class);
 		
 		// get parameter
-		final Class<?>[] parameterTypes = method.getParameterTypes();
+		final Type[] parameterTypes = method.getGenericParameterTypes();
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		
 		// values from parameters
@@ -230,7 +224,7 @@ public class RestDocGenerator {
 	 * @param paramType
 	 * @param paramAnnotations
 	 */
-	protected void parseMethodParameter(final List<String> queryParams, final Map<String, HeaderDefinition> methodRequestHeader, final Map<String, ParamDefinition> methodParams, final Class<?> paramType, final Annotation[] paramAnnotations) {
+	protected void parseMethodParameter(final List<String> queryParams, final Map<String, HeaderDefinition> methodRequestHeader, final Map<String, ParamDefinition> methodParams, final Type paramType, final Annotation[] paramAnnotations) {
 		final HeaderDefinition headerDefinition = new HeaderDefinition();
 		
 		final AnnotationMap map = new AnnotationMap(paramAnnotations);
@@ -277,7 +271,7 @@ public class RestDocGenerator {
 			final RestDocType[] types = docResponse.types();
 			for (final RestDocType restDocType : types) {
 				if (!restDocType.schemaClass().equals(Object.class)) {
-					final String schema = this.getSchemaFromClass(restDocType.schemaClass());
+					final String schema = SchemaResolver.getSchemaFromType(restDocType.schemaClass(), this.schemaMap, this.ext);
 					def.type(restDocType.type(), schema);
 				} else {
 					def.type(restDocType.type(), restDocType.schema());
@@ -290,8 +284,8 @@ public class RestDocGenerator {
 			}
 		}
 		if (def.getTypes().isEmpty()) {
-			final String schema = this.getSchemaFromClassOrNull(method.getReturnType());
-			String[] mediaTypes = this.getProducesMediaType(method);
+			final String schema = SchemaResolver.getSchemaFromTypeOrNull(method.getGenericReturnType(), this.schemaMap, this.ext);
+			String[] mediaTypes = MediaTypeResolver.getProducesMediaType(method);
 			if (mediaTypes != null) {
 				for (String mt : mediaTypes) {
 					def.type(mt, schema);
@@ -299,36 +293,6 @@ public class RestDocGenerator {
 			}
 		}
 		return def;
-	}
-	
-	private String getSchemaFromClass(final Class<?> schemaClass) {
-		String schema = this.getSchemaFromClassOrNull(schemaClass);
-		if (schema != null) {
-			return schema;
-		}
-		final String s = String.format("SchemaClass %s is not annotated with RestDocSchema.", schemaClass.getCanonicalName());
-		throw new RestDocException(s);
-	}
-	
-	private String getSchemaFromClassOrNull(final Class<?> schemaClass) {
-		if (schemaClass.isAnnotationPresent(RestDocSchema.class)) {
-			final RestDocSchema docSchema = schemaClass.getAnnotation(RestDocSchema.class);
-			final String schemaURI = docSchema.value();
-			if (!this.schemaMap.containsKey(schemaURI)) {
-				try {
-					JsonSchemaGenerator gen = new JsonSchemaGenerator(this.mapper);
-					final JsonSchema schema = gen.generateSchema(schemaClass);
-					final Schema s = new Schema();
-					s.setSchema(schema);
-					this.ext.newSchema(schemaURI, s, schemaClass);
-					this.schemaMap.put(schemaURI, s);
-				} catch (final JsonMappingException e) {
-					throw new RestDocException("Error creating schema for URI: " + schemaURI, e);
-				}
-			}
-			return schemaURI;
-		}
-		return null;
 	}
 	
 	private Map<String, String> getStatusCodes(final Method method) {
@@ -343,27 +307,27 @@ public class RestDocGenerator {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Collection<Representation> getAccepts(final Method method, Class<?>[] parameterTypes, Annotation[][] parameterAnnotations) {
+	private Collection<Representation> getAccepts(final Method method, Type[] parameterTypes, Annotation[][] parameterAnnotations) {
 		final Collection<Representation> list = Lists.newArrayList();
 		if (method.isAnnotationPresent(RestDocAccept.class)) {
 			final RestDocAccept docAccept = method.getAnnotation(RestDocAccept.class);
 			final RestDocType[] types = docAccept.value();
 			for (final RestDocType restDocType : types) {
 				if (!restDocType.schemaClass().equals(Object.class)) {
-					final String schema = this.getSchemaFromClass(restDocType.schemaClass());
+					final String schema = SchemaResolver.getSchemaFromType(restDocType.schemaClass(), this.schemaMap, this.ext);
 					list.add(new Representation(restDocType.type(), schema));
 				} else {
 					list.add(new Representation(restDocType.type(), restDocType.schema()));
 				}
 			}
 		} else {
-			String[] mediaTypes = this.getConsumesMediaType(method);
+			String[] mediaTypes = MediaTypeResolver.getConsumesMediaType(method);
 			if (mediaTypes != null) {
 				for (int i = 0; i < parameterTypes.length; i++) {
-					Class<?> param = parameterTypes[i];
+					Type param = parameterTypes[i];
 					final AnnotationMap map = new AnnotationMap(parameterAnnotations[i]);
 					if (!map.hasAnnotation(PathParam.class, QueryParam.class, HeaderParam.class)) {
-						final String schema = this.getSchemaFromClass(param);
+						final String schema = SchemaResolver.getSchemaFromType(param, this.schemaMap, this.ext);
 						for (String mt : mediaTypes) {
 							list.add(new Representation(mt, schema));
 						}
@@ -374,29 +338,7 @@ public class RestDocGenerator {
 		return list;
 	}
 	
-	private String[] getProducesMediaType(Method method) {
-		Produces produces = method.getAnnotation(Produces.class);
-		if (produces == null) {
-			produces = method.getDeclaringClass().getAnnotation(Produces.class);
-		}
-		if (produces != null) {
-			return produces.value();
-		}
-		return null;
-	}
-	
-	private String[] getConsumesMediaType(Method method) {
-		Consumes consumes = method.getAnnotation(Consumes.class);
-		if (consumes == null) {
-			consumes = method.getDeclaringClass().getAnnotation(Consumes.class);
-		}
-		if (consumes != null) {
-			return consumes.value();
-		}
-		return null;
-	}
-	
-	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam, final Class<?> paramType) {
+	private void parseRestDocParameter(final ParamDefinition definition, final RestDocParam docParam, final Type paramType) {
 		definition.setDescription(docParam.description());
 		final RestDocValidation[] restDocValidations = docParam.validations();
 		for (final RestDocValidation validation : restDocValidations) {
@@ -498,21 +440,21 @@ public class RestDocGenerator {
 		}
 		
 		@Override
-		public void queryParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+		public void queryParam(final String name, final ParamDefinition definition, final Type paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.queryParam(name, definition, paramType, map);
 			}
 		}
 		
 		@Override
-		public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+		public void pathParam(final String name, final ParamDefinition definition, final Type paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.pathParam(name, definition, paramType, map);
 			}
 		}
 		
 		@Override
-		public void headerParam(final String name, final HeaderDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+		public void headerParam(final String name, final HeaderDefinition definition, final Type paramType, final AnnotationMap map) {
 			for (final IRestDocGeneratorExtension e : this.exts) {
 				e.headerParam(name, definition, paramType, map);
 			}

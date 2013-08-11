@@ -1,6 +1,7 @@
 package org.restdoc.server.impl;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import org.restdoc.api.HeaderDefinition;
 import org.restdoc.api.MethodDefinition;
@@ -20,17 +21,17 @@ public class RestDocGeneratorExtensionAdapter implements IRestDocGeneratorExtens
 	}
 	
 	@Override
-	public void queryParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+	public void queryParam(final String name, final ParamDefinition definition, final Type paramType, final AnnotationMap map) {
 		//
 	}
 	
 	@Override
-	public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+	public void pathParam(final String name, final ParamDefinition definition, final Type paramType, final AnnotationMap map) {
 		//
 	}
 	
 	@Override
-	public void headerParam(final String name, final HeaderDefinition definition, final Class<?> paramType, final AnnotationMap map) {
+	public void headerParam(final String name, final HeaderDefinition definition, final Type paramType, final AnnotationMap map) {
 		//
 	}
 	

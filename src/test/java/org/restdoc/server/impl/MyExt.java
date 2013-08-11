@@ -1,5 +1,7 @@
 package org.restdoc.server.impl;
 
+import java.lang.reflect.Type;
+
 import org.restdoc.api.ParamDefinition;
 import org.restdoc.api.Schema;
 
@@ -9,8 +11,11 @@ import org.restdoc.api.Schema;
 public class MyExt extends RestDocGeneratorExtensionAdapter {
 	
 	@Override
-	public void pathParam(final String name, final ParamDefinition definition, final Class<?> paramType, final AnnotationMap map) {
-		definition.setAdditionalField("javaClass", paramType.getCanonicalName());
+	public void pathParam(final String name, final ParamDefinition definition, final Type paramType, final AnnotationMap map) {
+		if (paramType instanceof Class) {
+			Class<?> clz = (Class<?>) paramType;
+			definition.setAdditionalField("javaClass", clz.getCanonicalName());
+		}
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package org.restdoc.server.impl;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import org.restdoc.api.HeaderDefinition;
 import org.restdoc.api.MethodDefinition;
@@ -29,7 +30,7 @@ public interface IRestDocGeneratorExtension {
 	 * @param paramType the Java class of the parameter
 	 * @param map the map of annotations
 	 */
-	void queryParam(String name, ParamDefinition definition, Class<?> paramType, AnnotationMap map);
+	void queryParam(String name, ParamDefinition definition, Type paramType, AnnotationMap map);
 	
 	/**
 	 * invoked for every path parameter
@@ -39,7 +40,7 @@ public interface IRestDocGeneratorExtension {
 	 * @param paramType the Java class of the parameter
 	 * @param map the map of annotations
 	 */
-	void pathParam(String name, ParamDefinition definition, Class<?> paramType, AnnotationMap map);
+	void pathParam(String name, ParamDefinition definition, Type paramType, AnnotationMap map);
 	
 	/**
 	 * invoked for every header parameter
@@ -49,7 +50,7 @@ public interface IRestDocGeneratorExtension {
 	 * @param paramType the Java class of the parameter
 	 * @param map the map of annotations
 	 */
-	void headerParam(String name, HeaderDefinition definition, Class<?> paramType, AnnotationMap map);
+	void headerParam(String name, HeaderDefinition definition, Type paramType, AnnotationMap map);
 	
 	/**
 	 * invoked for every method
