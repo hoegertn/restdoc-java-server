@@ -41,6 +41,7 @@ public class SchemaResolverTest {
 		Assert.assertEquals("string", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rString"), this.map, null));
 		Assert.assertEquals("long", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rLong"), this.map, null));
 		Assert.assertEquals("boolean", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rLBoolean"), this.map, null));
+		Assert.assertEquals(null, SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rVoid"), this.map, null));
 	}
 	
 	@Test

@@ -38,6 +38,10 @@ public class ReflectClass {
 		return null;
 	}
 	
+	public void rVoid() {
+		
+	}
+	
 	public void pString(String p) {
 		//
 	}

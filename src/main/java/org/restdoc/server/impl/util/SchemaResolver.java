@@ -57,6 +57,9 @@ public final class SchemaResolver {
 	 * @return the schema URI
 	 */
 	public static String getSchemaFromTypeOrNull(final Type type, Map<String, Schema> schemaMap, IRestDocGeneratorExtension ext) {
+		if (type.equals(Void.TYPE)) {
+			return null;
+		}
 		if (type instanceof Class) {
 			return SchemaResolver.getSchemaFromClassOrNull((Class<?>) type, schemaMap, ext);
 		}

@@ -288,7 +288,7 @@ public class RestDocGenerator {
 				def.header(restDocHeader.name(), restDocHeader.description(), restDocHeader.required());
 			}
 		}
-		if (def.getTypes().isEmpty()) {
+		if (def.getTypes().isEmpty() && !method.getReturnType().equals(Void.TYPE)) {
 			final String schema = SchemaResolver.getSchemaFromTypeOrNull(method.getGenericReturnType(), this.schemaMap, this.ext);
 			String[] mediaTypes = MediaTypeResolver.getProducesMediaType(method);
 			if (mediaTypes != null) {
