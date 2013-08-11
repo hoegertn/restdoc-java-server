@@ -182,7 +182,12 @@ public class RestDocGenerator {
 			path += "{?" + string + "}";
 		}
 		
-		final String id = docAnnotation.id();
+		final String id;
+		if ((docAnnotation.id() != null) && !docAnnotation.id().isEmpty()) {
+			id = docAnnotation.id();
+		} else {
+			id = method.getName();
+		}
 		final String resourceDescription = docAnnotation.resourceDescription();
 		
 		final String methodDescription = docAnnotation.methodDescription();

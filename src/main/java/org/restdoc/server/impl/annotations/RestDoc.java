@@ -26,7 +26,7 @@ public @interface RestDoc {
 	/**
 	 * @return the description of the resource method
 	 */
-	String methodDescription();
+	String methodDescription() default "";
 	
 	/**
 	 * @return the id of the resource

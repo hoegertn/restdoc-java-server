@@ -71,7 +71,7 @@ public class MyRSBean {
 	 */
 	@GET
 	@Path(".json")
-	@RestDoc(id = "messageList2", resourceDescription = "A list of messages", methodDescription = "List all messages")
+	@RestDoc(resourceDescription = "A list of messages", methodDescription = "List all messages")
 	@RestDocResponse(headers = {@RestDocHeader(name = "X-Call", description = "Remaining calls", required = false)})
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("application/json")
