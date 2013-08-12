@@ -133,6 +133,7 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<goals>deploy nexus-staging:release</goals>
+					<tag>release/${project.version}}</tag>
 				</configuration>
 			</plugin>
 		</plugins>
