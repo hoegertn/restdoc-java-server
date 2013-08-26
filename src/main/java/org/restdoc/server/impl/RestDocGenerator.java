@@ -209,7 +209,8 @@ public class RestDocGenerator {
 		}
 		final String resourceDescription = (docAnnotation != null) ? docAnnotation.resourceDescription() : null;
 		
-		final String methodDescription = (docAnnotation != null) ? docAnnotation.methodDescription() : null;
+		final String methodDescription = (docAnnotation != null) ? docAnnotation.methodDescription() : method.getName();
+		
 		if (methodType == null) {
 			throw new RestDocException("No suitable method found for method: " + method.toString());
 		}
