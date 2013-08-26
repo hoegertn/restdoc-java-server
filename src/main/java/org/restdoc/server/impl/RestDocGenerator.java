@@ -14,6 +14,7 @@ package org.restdoc.server.impl;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
@@ -302,9 +304,16 @@ public class RestDocGenerator {
 				this.ext.headerParam(name, definition, paramType, map);
 				methodRequestHeader.put(name, headerDefinition);
 			}
+		} else if (map.hasAnnotation(BeanParam.class)) {
+			if (paramType instanceof Class) {
+				Class<?> beanParamClass = (Class<?>) paramType;
+				Field[] fields = beanParamClass.getDeclaredFields();
+				for (Field f : fields) {
+					this.parseMethodParameter(queryParams, methodRequestHeader, methodParams, f.getType(), f.getAnnotations());
+				}
+			}
 		} else {
 			// Param is body type
-			
 		}
 	}
 	

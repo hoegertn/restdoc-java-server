@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 /**
  * 
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestDocParam {
 	
