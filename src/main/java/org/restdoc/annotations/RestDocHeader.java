@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -19,13 +19,23 @@ import java.lang.annotation.Target;
 /**
  * 
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RestDocSchema {
+public @interface RestDocHeader {
 	
 	/**
-	 * @return the URI of the schema
+	 * @return the description of the header
 	 */
-	String value();
+	String description();
+	
+	/**
+	 * @return if this header is mandatory
+	 */
+	boolean required() default false;
+	
+	/**
+	 * @return the name of this header if not already defined by javax.ws.rs.HeaderParam
+	 */
+	String name() default "";
 	
 }

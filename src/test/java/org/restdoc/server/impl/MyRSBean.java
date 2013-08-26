@@ -26,13 +26,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import org.restdoc.annotations.RestDoc;
+import org.restdoc.annotations.RestDocHeader;
+import org.restdoc.annotations.RestDocParam;
+import org.restdoc.annotations.RestDocResponse;
+import org.restdoc.annotations.RestDocReturnCode;
+import org.restdoc.annotations.RestDocReturnCodes;
 import org.restdoc.server.ext.oauth2.Scopes;
-import org.restdoc.server.impl.annotations.RestDoc;
-import org.restdoc.server.impl.annotations.RestDocHeader;
-import org.restdoc.server.impl.annotations.RestDocParam;
-import org.restdoc.server.impl.annotations.RestDocResponse;
-import org.restdoc.server.impl.annotations.RestDocReturnCode;
-import org.restdoc.server.impl.annotations.RestDocReturnCodes;
 
 import com.google.common.collect.Maps;
 

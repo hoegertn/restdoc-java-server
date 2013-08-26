@@ -11,7 +11,7 @@ package org.restdoc.server.impl;
  * and limitations under the License. #L%
  */
 
-import org.restdoc.server.impl.annotations.RestDocSchema;
+import org.restdoc.annotations.RestDocSchema;
 
 /**
  * 

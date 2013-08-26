@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -21,11 +21,16 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RestDocReturnCodes {
+public @interface RestDocResponse {
 	
 	/**
-	 * @return the array of return codes
+	 * @return the array of response types
 	 */
-	RestDocReturnCode[] value();
+	RestDocType[] types() default {};
+	
+	/**
+	 * @return the array of response headers
+	 */
+	RestDocHeader[] headers() default {};
 	
 }

@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you

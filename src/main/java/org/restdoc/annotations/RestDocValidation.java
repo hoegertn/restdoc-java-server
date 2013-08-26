@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -17,12 +17,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *  
+ * 
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RestDocIgnore {
+public @interface RestDocValidation {
 	
-	// marker only
+	/**
+	 * @return the validation type
+	 */
+	String type() default "match";
+	
+	/**
+	 * @return the validation pattern
+	 */
+	String pattern();
 	
 }

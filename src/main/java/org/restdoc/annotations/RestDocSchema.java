@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -19,23 +19,13 @@ import java.lang.annotation.Target;
 /**
  * 
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RestDocType {
+public @interface RestDocSchema {
 	
 	/**
-	 * @return the response type e.g. text/plain or application/json
+	 * @return the URI of the schema
 	 */
-	String type();
-	
-	/**
-	 * @return the schema URI
-	 */
-	String schema() default "";
-	
-	/**
-	 * @return the schema Class
-	 */
-	Class<?> schemaClass() default Object.class;
+	String value();
 	
 }

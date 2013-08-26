@@ -1,4 +1,4 @@
-package org.restdoc.server.impl.annotations;
+package org.restdoc.annotations;
 
 /*
  * #%L Java Server implementation %% Copyright (C) 2012 RestDoc org %% Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -19,18 +19,18 @@ import java.lang.annotation.Target;
 /**
  * 
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RestDocParam {
+public @interface RestDocReturnCode {
 	
 	/**
-	 * @return the description of the parameter
+	 * @return the array of response types
+	 */
+	String code();
+	
+	/**
+	 * @return the description of the return code
 	 */
 	String description();
-	
-	/**
-	 * @return the parameter validations
-	 */
-	RestDocValidation[] validations() default {};
 	
 }

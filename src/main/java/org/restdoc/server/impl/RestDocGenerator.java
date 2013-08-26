@@ -12,12 +12,14 @@ package org.restdoc.server.impl;
  */
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,16 +30,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
+import org.restdoc.annotations.RestDocAccept;
+import org.restdoc.annotations.RestDocHeader;
+import org.restdoc.annotations.RestDocIgnore;
+import org.restdoc.annotations.RestDocParam;
+import org.restdoc.annotations.RestDocResponse;
+import org.restdoc.annotations.RestDocReturnCode;
+import org.restdoc.annotations.RestDocReturnCodes;
+import org.restdoc.annotations.RestDocType;
+import org.restdoc.annotations.RestDocValidation;
 import org.restdoc.api.GlobalHeader;
 import org.restdoc.api.HeaderDefinition;
 import org.restdoc.api.MethodDefinition;
@@ -49,15 +56,6 @@ import org.restdoc.api.RestDoc;
 import org.restdoc.api.RestResource;
 import org.restdoc.api.Schema;
 import org.restdoc.api.util.RestDocParser;
-import org.restdoc.server.impl.annotations.RestDocAccept;
-import org.restdoc.server.impl.annotations.RestDocHeader;
-import org.restdoc.server.impl.annotations.RestDocIgnore;
-import org.restdoc.server.impl.annotations.RestDocParam;
-import org.restdoc.server.impl.annotations.RestDocResponse;
-import org.restdoc.server.impl.annotations.RestDocReturnCode;
-import org.restdoc.server.impl.annotations.RestDocReturnCodes;
-import org.restdoc.server.impl.annotations.RestDocType;
-import org.restdoc.server.impl.annotations.RestDocValidation;
 import org.restdoc.server.impl.util.MediaTypeResolver;
 import org.restdoc.server.impl.util.SchemaResolver;
 import org.slf4j.Logger;
@@ -157,11 +155,7 @@ public class RestDocGenerator {
 		// find methods
 		final Method[] methods = apiClass.getMethods();
 		for (final Method method : methods) {
-			if (method.isAnnotationPresent(Path.class) || //
-			method.isAnnotationPresent(GET.class) || //
-			method.isAnnotationPresent(POST.class) || //
-			method.isAnnotationPresent(PUT.class) || //
-			method.isAnnotationPresent(DELETE.class)) {
+			if (method.isAnnotationPresent(Path.class) || (RestDocGenerator.getHTTPVerb(method) != null)) {
 				this.logger.debug("Generating RestDoc of method: " + method.toString());
 				this.addResourceMethod(basepath, method);
 			}
@@ -176,7 +170,7 @@ public class RestDocGenerator {
 		
 		// get needed annotations from method
 		final String methodType = RestDocGenerator.getHTTPVerb(method);
-		final org.restdoc.server.impl.annotations.RestDoc docAnnotation = method.getAnnotation(org.restdoc.server.impl.annotations.RestDoc.class);
+		final org.restdoc.annotations.RestDoc docAnnotation = method.getAnnotation(org.restdoc.annotations.RestDoc.class);
 		final Path pathAnnotation = method.getAnnotation(Path.class);
 		
 		String path = basepath;
@@ -205,24 +199,11 @@ public class RestDocGenerator {
 			path += "{?" + string + "}";
 		}
 		
-		String id;
+		final String id;
 		if ((docAnnotation != null) && (docAnnotation.id() != null) && !docAnnotation.id().isEmpty()) {
 			id = docAnnotation.id();
 		} else {
-			try {
-				MessageDigest md = MessageDigest.getInstance("MD5");
-				byte[] digest = md.digest(path.getBytes("UTF-8"));
-				BigInteger bigInt = new BigInteger(1, digest);
-				String hashtext = bigInt.toString(16);
-				// Now we need to zero pad it if you actually want the full 32 chars.
-				while (hashtext.length() < 32) {
-					hashtext = "0" + hashtext;
-				}
-				id = hashtext;
-			} catch (Exception e) {
-				this.logger.warn("Failed to generate MD5 sum", e);
-				id = method.getName();
-			}
+			id = this.getDefaultResourceId(method, path);
 		}
 		final String resourceDescription = (docAnnotation != null) ? docAnnotation.resourceDescription() : null;
 		
@@ -259,6 +240,25 @@ public class RestDocGenerator {
 		restResource.getMethods().put(methodType, def);
 		
 		this.ext.newMethod(restResource, def, method);
+	}
+	
+	private String getDefaultResourceId(final Method method, String path) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] digest = md.digest(path.getBytes("UTF-8"));
+			BigInteger bigInt = new BigInteger(1, digest);
+			String hashtext = bigInt.toString(16);
+			// Now we need to zero pad it if you actually want the full 32 chars.
+			while (hashtext.length() < 32) {
+				hashtext = "0" + hashtext;
+			}
+			return hashtext;
+		} catch (NoSuchAlgorithmException e) {
+			this.logger.warn("Failed to generate MD5 sum", e);
+		} catch (UnsupportedEncodingException e) {
+			this.logger.warn("Failed to generate MD5 sum", e);
+		}
+		return method.getName();
 	}
 	
 	/**

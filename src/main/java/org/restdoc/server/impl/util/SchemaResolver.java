@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 
+import org.restdoc.annotations.RestDocSchema;
 import org.restdoc.api.Schema;
 import org.restdoc.api.util.RestDocParser;
 import org.restdoc.server.impl.IRestDocGeneratorExtension;
 import org.restdoc.server.impl.RestDocException;
-import org.restdoc.server.impl.annotations.RestDocSchema;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
