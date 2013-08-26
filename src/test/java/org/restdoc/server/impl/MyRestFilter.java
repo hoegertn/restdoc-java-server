@@ -63,7 +63,7 @@ public class MyRestFilter implements Filter {
 		this.generator.registerGeneratorExtension(new MyExt());
 		this.generator.registerGeneratorExtension(oauth);
 		
-		final Class<?>[] classes = new Class[] {MyRSBean.class, MyCrudBean.class};
+		final Class<?>[] classes = new Class[] {MyRSBean.class, MyCrudBean.class, MyResourceBean.class};
 		final GlobalHeader globalHeader = new GlobalHeader();
 		globalHeader.request("X-Auth", "The Auth Key. See http://www.foo.bar/auth", false);
 		this.generator.init(classes, globalHeader, "/v1");

@@ -81,7 +81,7 @@ public final class SchemaResolver {
 				}
 			}
 		}
-		return null;
+		return type.toString();
 	}
 	
 	private static String getSchemaFromClassOrNull(final Class<?> schemaClass, Map<String, Schema> schemaMap, IRestDocGeneratorExtension ext) {
@@ -125,6 +125,6 @@ public final class SchemaResolver {
 			}
 			return schemaURI;
 		}
-		return null;
+		return schemaClass.getCanonicalName();
 	}
 }

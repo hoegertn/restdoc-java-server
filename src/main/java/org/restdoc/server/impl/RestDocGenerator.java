@@ -16,6 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,8 +28,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -45,6 +51,7 @@ import org.restdoc.api.Schema;
 import org.restdoc.api.util.RestDocParser;
 import org.restdoc.server.impl.annotations.RestDocAccept;
 import org.restdoc.server.impl.annotations.RestDocHeader;
+import org.restdoc.server.impl.annotations.RestDocIgnore;
 import org.restdoc.server.impl.annotations.RestDocParam;
 import org.restdoc.server.impl.annotations.RestDocResponse;
 import org.restdoc.server.impl.annotations.RestDocReturnCode;
@@ -150,7 +157,11 @@ public class RestDocGenerator {
 		// find methods
 		final Method[] methods = apiClass.getMethods();
 		for (final Method method : methods) {
-			if (method.isAnnotationPresent(org.restdoc.server.impl.annotations.RestDoc.class)) {
+			if (method.isAnnotationPresent(Path.class) || //
+			method.isAnnotationPresent(GET.class) || //
+			method.isAnnotationPresent(POST.class) || //
+			method.isAnnotationPresent(PUT.class) || //
+			method.isAnnotationPresent(DELETE.class)) {
 				this.logger.debug("Generating RestDoc of method: " + method.toString());
 				this.addResourceMethod(basepath, method);
 			}
@@ -158,9 +169,25 @@ public class RestDocGenerator {
 	}
 	
 	private void addResourceMethod(final String basepath, final Method method) {
+		if (method.isAnnotationPresent(RestDocIgnore.class)) {
+			this.logger.info("Ignoring method: " + method);
+			return;
+		}
+		
 		// get needed annotations from method
+		final String methodType = RestDocGenerator.getHTTPVerb(method);
 		final org.restdoc.server.impl.annotations.RestDoc docAnnotation = method.getAnnotation(org.restdoc.server.impl.annotations.RestDoc.class);
 		final Path pathAnnotation = method.getAnnotation(Path.class);
+		
+		String path = basepath;
+		if (pathAnnotation != null) {
+			path += pathAnnotation.value();
+		}
+		
+		if ((methodType == null) && (pathAnnotation != null)) {
+			this.addResourcesOfClass(method.getReturnType(), path);
+			return;
+		}
 		
 		// get parameter
 		final Type[] parameterTypes = method.getGenericParameterTypes();
@@ -174,24 +201,35 @@ public class RestDocGenerator {
 			this.parseMethodParameter(queryParams, methodRequestHeader, methodParams, parameterTypes[i], parameterAnnotations[i]);
 		}
 		
-		String path = basepath;
-		if (pathAnnotation != null) {
-			path += pathAnnotation.value();
-		}
 		for (final String string : queryParams) {
 			path += "{?" + string + "}";
 		}
 		
-		final String id;
-		if ((docAnnotation.id() != null) && !docAnnotation.id().isEmpty()) {
+		String id;
+		if ((docAnnotation != null) && (docAnnotation.id() != null) && !docAnnotation.id().isEmpty()) {
 			id = docAnnotation.id();
 		} else {
-			id = method.getName();
+			try {
+				MessageDigest md = MessageDigest.getInstance("MD5");
+				byte[] digest = md.digest(path.getBytes("UTF-8"));
+				BigInteger bigInt = new BigInteger(1, digest);
+				String hashtext = bigInt.toString(16);
+				// Now we need to zero pad it if you actually want the full 32 chars.
+				while (hashtext.length() < 32) {
+					hashtext = "0" + hashtext;
+				}
+				id = hashtext;
+			} catch (Exception e) {
+				this.logger.warn("Failed to generate MD5 sum", e);
+				id = method.getName();
+			}
 		}
-		final String resourceDescription = docAnnotation.resourceDescription();
+		final String resourceDescription = (docAnnotation != null) ? docAnnotation.resourceDescription() : null;
 		
-		final String methodDescription = docAnnotation.methodDescription();
-		final String methodType = RestDocGenerator.getHTTPVerb(method);
+		final String methodDescription = (docAnnotation != null) ? docAnnotation.methodDescription() : null;
+		if (methodType == null) {
+			throw new RestDocException("No suitable method found for method: " + method.toString());
+		}
 		
 		RestResource restResource = this.resources.get(path);
 		if (restResource == null) {
@@ -207,7 +245,8 @@ public class RestDocGenerator {
 		}
 		
 		if (restResource.getMethods().containsKey(methodType)) {
-			throw new RestDocException("Duplicate method detected for resource: " + path + " -> " + methodType);
+			this.logger.warn("Duplicate method detected for resource: " + path + " -> " + methodType);
+			return;
 		}
 		
 		final MethodDefinition def = new MethodDefinition();
@@ -373,7 +412,7 @@ public class RestDocGenerator {
 				return httpMethod.value();
 			}
 		}
-		throw new RestDocException("No suitable method found for method: " + method.toString());
+		return null;
 	}
 	
 	// ######################################################
