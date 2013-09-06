@@ -207,7 +207,17 @@ public class RestDocGenerator {
 		} else {
 			id = this.getDefaultResourceId(method, path);
 		}
-		final String resourceDescription = (docAnnotation != null) ? docAnnotation.resourceDescription() : null;
+		final String resourceDescription;
+		if (docAnnotation == null) {
+			if (method.getDeclaringClass().isAnnotationPresent(org.restdoc.annotations.RestDoc.class)) {
+				org.restdoc.annotations.RestDoc doc = method.getDeclaringClass().getAnnotation(org.restdoc.annotations.RestDoc.class);
+				resourceDescription = doc.resourceDescription();
+			} else {
+				resourceDescription = null;
+			}
+		} else {
+			resourceDescription = docAnnotation.resourceDescription();
+		}
 		
 		final String methodDescription = (docAnnotation != null) ? docAnnotation.methodDescription() : method.getName();
 		

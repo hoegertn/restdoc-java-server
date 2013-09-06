@@ -7,12 +7,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import org.restdoc.annotations.RestDoc;
 import org.restdoc.annotations.RestDocIgnore;
 import org.restdoc.annotations.RestDocReturnCode;
 import org.restdoc.annotations.RestDocReturnCodes;
 
 @Produces("text/plain")
 @Consumes("text/plain")
+@RestDoc(resourceDescription = "foo Res")
 public class MyDeepRes {
 	
 	/**
