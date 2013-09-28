@@ -109,7 +109,7 @@ public final class SchemaResolver {
 		if (schemaClass.isAnnotationPresent(RestDocSchema.class)) {
 			final RestDocSchema docSchema = schemaClass.getAnnotation(RestDocSchema.class);
 			final String schemaURI = docSchema.value();
-			if (!schemaMap.containsKey(schemaURI)) {
+			if ((schemaMap != null) && !schemaMap.containsKey(schemaURI)) {
 				try {
 					JsonSchemaGenerator gen = new JsonSchemaGenerator(SchemaResolver.mapper);
 					final JsonSchema schema = gen.generateSchema(schemaClass);

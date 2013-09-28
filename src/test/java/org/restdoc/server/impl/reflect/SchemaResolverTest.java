@@ -25,39 +25,43 @@ public class SchemaResolverTest {
 	
 	@Test
 	public void testClass() {
-		Assert.assertEquals("http://some.json/msg", SchemaResolver.getSchemaFromTypeOrNull(Msg.class, this.map, null));
-		Assert.assertEquals("string", SchemaResolver.getSchemaFromTypeOrNull(String.class, this.map, null));
-		Assert.assertEquals("long", SchemaResolver.getSchemaFromTypeOrNull(Long.class, this.map, null));
-		Assert.assertEquals("integer", SchemaResolver.getSchemaFromTypeOrNull(Integer.class, this.map, null));
-		Assert.assertEquals("double", SchemaResolver.getSchemaFromTypeOrNull(Double.class, this.map, null));
-		Assert.assertEquals("integer", SchemaResolver.getSchemaFromTypeOrNull(int.class, this.map, null));
-		Assert.assertEquals("boolean", SchemaResolver.getSchemaFromTypeOrNull(Boolean.class, this.map, null));
-		Assert.assertEquals("double", SchemaResolver.getSchemaFromTypeOrNull(BigDecimal.class, this.map, null));
+		Assert.assertEquals("http://some.json/msg", this.getSchemaForClass(Msg.class));
+		Assert.assertEquals("string", this.getSchemaForClass(String.class));
+		Assert.assertEquals("long", this.getSchemaForClass(Long.class));
+		Assert.assertEquals("integer", this.getSchemaForClass(Integer.class));
+		Assert.assertEquals("double", this.getSchemaForClass(Double.class));
+		Assert.assertEquals("integer", this.getSchemaForClass(int.class));
+		Assert.assertEquals("boolean", this.getSchemaForClass(Boolean.class));
+		Assert.assertEquals("double", this.getSchemaForClass(BigDecimal.class));
 	}
 	
 	@Test
 	public void testReturn() {
-		Assert.assertEquals("http://some.json/msg", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rMsg"), this.map, null));
-		Assert.assertEquals("string", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rString"), this.map, null));
-		Assert.assertEquals("long", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rLong"), this.map, null));
-		Assert.assertEquals("boolean", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rLBoolean"), this.map, null));
-		Assert.assertEquals(null, SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rVoid"), this.map, null));
+		Assert.assertEquals("http://some.json/msg", this.getSchemaForMethod("rMsg"));
+		Assert.assertEquals("string", this.getSchemaForMethod("rString"));
+		Assert.assertEquals("long", this.getSchemaForMethod("rLong"));
+		Assert.assertEquals("boolean", this.getSchemaForMethod("rLBoolean"));
+		Assert.assertEquals(null, this.getSchemaForMethod("rVoid"));
 	}
 	
 	@Test
 	public void testCollection() {
-		Assert.assertEquals("http://some.json/msg[]", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rListMsg"), this.map, null));
-		Assert.assertEquals("http://some.json/msg[]", SchemaResolver.getSchemaFromTypeOrNull(SchemaResolverTest.ret("rAMsg"), this.map, null));
+		Assert.assertEquals("http://some.json/msg[]", this.getSchemaForMethod("rListMsg"));
+		Assert.assertEquals("http://some.json/msg[]", this.getSchemaForMethod("rAMsg"));
 	}
 	
-	private static Type ret(String methodName) {
+	private String getSchemaForClass(Type type) {
+		return SchemaResolver.getSchemaFromTypeOrNull(type, this.map, null);
+	}
+	
+	private String getSchemaForMethod(String methodName) {
 		try {
 			Type t = ReflectClass.class.getMethod(methodName).getGenericReturnType();
-			System.out.println(t + " - " + t.getClass());
-			return t;
+			return this.getSchemaForClass(t);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
+	
 }

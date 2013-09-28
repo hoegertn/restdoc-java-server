@@ -39,7 +39,7 @@ public class ReflectClass {
 	}
 	
 	public void rVoid() {
-		
+		//
 	}
 	
 	public void pString(String p) {
