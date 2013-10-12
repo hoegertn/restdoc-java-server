@@ -63,6 +63,7 @@ import org.restdoc.server.impl.util.SchemaResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -421,6 +422,10 @@ public class RestDocGenerator {
 			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_SIGNED_DECIMAL));
 		} else if (paramType.equals(Boolean.class)) {
 			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, RestDocGenerator.PATTERN_BOOL));
+		} else if ((paramType instanceof Class) && ((Class<?>) paramType).isEnum()) {
+			List<?> values = Arrays.asList(((Class<?>) paramType).getEnumConstants());
+			String join = Joiner.on('|').join(values);
+			definition.getValidations().add(new ParamValidation(RestDocGenerator.VALIDATION_MATCH, join));
 		}
 	}
 	

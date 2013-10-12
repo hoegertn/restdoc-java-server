@@ -16,4 +16,8 @@ public class BeanObj {
 	@RestDocHeader(description = "my special header")
 	private Long myHeader;
 	
+	@QueryParam("color")
+	@RestDocParam(description = "my special color")
+	private EColor color;
+	
 }
