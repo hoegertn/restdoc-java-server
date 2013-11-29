@@ -4,8 +4,8 @@
 	<groupId>org.restdoc</groupId>
 	<artifactId>restdoc-server-impl-jaxrs11</artifactId>
 	<version>1.7.0-SNAPSHOT</version>
-	<name>Java Server implementation</name>
-	<description>Server implementation of RestDoc API Spec</description>
+	<name>Java Server implementation (JAX-RS 1.1)</name>
+	<description>Server implementation of RestDoc API Spec (JAX-RS 1.1)</description>
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
 		<artifactId>oss-parent</artifactId>
