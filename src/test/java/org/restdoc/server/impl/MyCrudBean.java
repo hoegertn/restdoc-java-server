@@ -57,6 +57,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	@GET
 	@Produces("text/plain")
 	@Consumes("text/plain")
+	@SuppressWarnings("unused")
 	public String getSingleItem(@PathParam("id") final String id) {
 		throw new WebApplicationException(Status.NOT_FOUND);
 	}
@@ -70,6 +71,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	@POST
 	@Produces("text/plain")
 	@Consumes("text/plain")
+	@SuppressWarnings("unused")
 	public String updateItem(@PathParam("id") final String id, final String content) {
 		return content;
 	}
@@ -89,6 +91,7 @@ public class MyCrudBean implements IProvideRestDoc {
 	 * @param id
 	 */
 	@DELETE
+	@SuppressWarnings("unused")
 	public void deleteItem(@PathParam("id") final String id) {
 		// delete object
 	}

@@ -131,6 +131,7 @@ public class MyRSBean {
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
 	@Produces("text/plain")
 	@Consumes("application/json")
+	@SuppressWarnings("unused")
 	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
 		return this.setMessage(msg.getId(), msg.getContent());
 	}
