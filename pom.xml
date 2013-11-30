@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.restdoc</groupId>
 	<artifactId>restdoc-server-impl-jaxrs11</artifactId>
-	<version>1.7.0</version>
+	<version>1.7.1-SNAPSHOT</version>
 	<name>Java Server implementation (JAX-RS 1.1)</name>
 	<description>Server implementation of RestDoc API Spec (JAX-RS 1.1)</description>
 	<parent>
@@ -87,7 +87,7 @@
 		<connection>scm:git:git@github.com:hoegertn/restdoc-java-server.git</connection>
 		<developerConnection>scm:git:git@github.com:hoegertn/restdoc-java-server.git</developerConnection>
 		<url>git@github.com:hoegertn/restdoc-java-server.git</url>
-	  <tag>jaxrs11-v1.7.0</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<issueManagement>
 		<system>github</system>
