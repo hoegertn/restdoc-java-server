@@ -37,6 +37,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response.Status;
 
 import org.restdoc.annotations.RestDocAccept;
 import org.restdoc.annotations.RestDocHeader;
@@ -239,17 +240,19 @@ public class RestDocGenerator {
 			this.ext.newResource(restResource);
 		}
 		
-		if (restResource.getMethods().containsKey(methodType)) {
-			this.logger.warn("Duplicate method detected for resource: " + path + " -> " + methodType);
-			return;
+		final MethodDefinition def;
+		if (!restResource.getMethods().containsKey(methodType)) {
+			def = new MethodDefinition();
+			def.setDescription(methodDescription);
+			def.setResponse(new ResponseDefinition());
+		} else {
+			def = restResource.getMethods().get(methodType);
 		}
 		
-		final MethodDefinition def = new MethodDefinition();
-		def.setDescription(methodDescription);
 		def.getHeaders().putAll(methodRequestHeader);
 		def.getAccepts().addAll(this.getAccepts(method, parameterTypes, parameterAnnotations));
 		def.getStatusCodes().putAll(this.getStatusCodes(method));
-		def.setResponse(this.getMethodResponse(method));
+		this.addMethodResponse(def.getResponse(), method);
 		
 		restResource.getMethods().put(methodType, def);
 		
@@ -329,8 +332,8 @@ public class RestDocGenerator {
 		}
 	}
 	
-	private ResponseDefinition getMethodResponse(final Method method) {
-		final ResponseDefinition def = new ResponseDefinition();
+	private void addMethodResponse(final ResponseDefinition def, final Method method) {
+		boolean typeFound = false;
 		if (method.isAnnotationPresent(RestDocResponse.class)) {
 			final RestDocResponse docResponse = method.getAnnotation(RestDocResponse.class);
 			final RestDocType[] types = docResponse.types();
@@ -338,8 +341,10 @@ public class RestDocGenerator {
 				if (!restDocType.schemaClass().equals(Object.class)) {
 					final String schema = SchemaResolver.getSchemaFromType(restDocType.schemaClass(), this.schemaMap, this.ext);
 					def.type(restDocType.type(), schema);
+					typeFound = true;
 				} else {
 					def.type(restDocType.type(), restDocType.schema());
+					typeFound = true;
 				}
 			}
 			
@@ -348,7 +353,7 @@ public class RestDocGenerator {
 				def.header(restDocHeader.name(), restDocHeader.description(), restDocHeader.required());
 			}
 		}
-		if (def.getTypes().isEmpty() && !method.getReturnType().equals(Void.TYPE)) {
+		if (!typeFound && !method.getReturnType().equals(Void.TYPE)) {
 			final String schema = SchemaResolver.getSchemaFromTypeOrNull(method.getGenericReturnType(), this.schemaMap, this.ext);
 			String[] mediaTypes = MediaTypeResolver.getProducesMediaType(method);
 			if (mediaTypes != null) {
@@ -357,7 +362,6 @@ public class RestDocGenerator {
 				}
 			}
 		}
-		return def;
 	}
 	
 	private Map<String, String> getStatusCodes(final Method method) {
@@ -365,8 +369,15 @@ public class RestDocGenerator {
 		if (method.isAnnotationPresent(RestDocReturnCodes.class)) {
 			final RestDocReturnCode[] returnCodes = method.getAnnotation(RestDocReturnCodes.class).value();
 			for (final RestDocReturnCode rdrc : returnCodes) {
-				codeMap.put(rdrc.code(), rdrc.description());
+				String description = rdrc.description();
+				if (description.isEmpty()) {
+					description = Status.fromStatusCode(Integer.valueOf(rdrc.code())).getReasonPhrase();
+				}
+				codeMap.put(rdrc.code(), description);
 			}
+		}
+		if (method.getReturnType().equals(Void.TYPE)) {
+			codeMap.put(String.valueOf(Status.NO_CONTENT.getStatusCode()), Status.NO_CONTENT.getReasonPhrase());
 		}
 		return codeMap;
 	}

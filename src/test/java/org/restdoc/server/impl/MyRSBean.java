@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -96,8 +97,23 @@ public class MyRSBean {
 	@RestDoc(id = "message", resourceDescription = "A single message", methodDescription = "Read the message content")
 	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found")})
 	@Produces("text/plain")
-	@Consumes("text/plain")
 	public String getMessage(@PathParam("id") @RestDocParam(description = "The message id") final String id) {
+		if (this.messages.containsKey(id)) {
+			return this.messages.get(id);
+		}
+		throw new WebApplicationException(Status.NOT_FOUND);
+	}
+	
+	/**
+	 * @param id
+	 * @return the message
+	 */
+	@Path("/{id}")
+	@GET
+	@RestDoc(id = "message", resourceDescription = "A single message", methodDescription = "Read the message content")
+	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed"), @RestDocReturnCode(code = "404", description = "Message not found")})
+	@Produces("application/json")
+	public String getMessageJSON(@PathParam("id") @RestDocParam(description = "The message id") final String id) {
 		if (this.messages.containsKey(id)) {
 			return this.messages.get(id);
 		}
@@ -110,15 +126,13 @@ public class MyRSBean {
 	 * @return the created message
 	 */
 	@Path("/{id}")
-	@POST
+	@PUT
 	@RestDoc(methodDescription = "Update the message content")
-	@RestDocReturnCodes({@RestDocReturnCode(code = "200", description = "All went well"), @RestDocReturnCode(code = "403", description = "Access not allowed")})
-	@Produces("text/plain")
+	@RestDocReturnCodes({@RestDocReturnCode(code = "403", description = "")})
 	@Consumes("text/plain")
 	@Scopes("write")
-	public String setMessage(@PathParam("id") final String id, final String content) {
+	public void setMessage(@PathParam("id") final String id, final String content) {
 		this.messages.put(id, content);
-		return content;
 	}
 	
 	/**
@@ -133,7 +147,8 @@ public class MyRSBean {
 	@Consumes("application/json")
 	@SuppressWarnings("unused")
 	public String setMessage(final Msg msg, @QueryParam("X-TTL") @RestDocParam(description = "The message lifetime") final Long lifetime) {
-		return this.setMessage(msg.getId(), msg.getContent());
+		this.setMessage(msg.getId(), msg.getContent());
+		return msg.getContent();
 	}
 	
 }
