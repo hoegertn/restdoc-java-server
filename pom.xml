@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.restdoc</groupId>
 	<artifactId>restdoc-server-impl</artifactId>
-	<version>1.7.1</version>
+	<version>1.7.2-SNAPSHOT</version>
 	<name>Java Server implementation</name>
 	<description>Server implementation of RestDoc API Spec</description>
 	<parent>
@@ -94,7 +94,7 @@
 		<connection>scm:git:git@github.com:hoegertn/restdoc-java-server.git</connection>
 		<developerConnection>scm:git:git@github.com:hoegertn/restdoc-java-server.git</developerConnection>
 		<url>git@github.com:hoegertn/restdoc-java-server.git</url>
-		<tag>v1.7.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<issueManagement>
 		<system>github</system>
